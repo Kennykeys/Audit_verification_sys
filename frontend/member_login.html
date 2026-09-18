@@ -8,25 +8,47 @@
 <body>
   <div class="card">
     <h1>Member Login</h1>
-    <form id="loginForm">
-      <input type="text" id="memberId" placeholder="Member ID" required>
-      <input type="password" id="password" placeholder="Password" required>
+
+    <!-- Login Form -->
+    <form id="loginForm" class="form-section">
+      <div class="input-group">
+        <span class="icon">🆔</span>
+        <input type="text" id="memberId" placeholder="Member ID" required>
+      </div>
+      <div class="input-group">
+        <span class="icon">🔑</span>
+        <input type="password" id="password" placeholder="Password" required>
+      </div>
       <button type="submit">Login</button>
     </form>
     <pre id="loginResponse"></pre>
 
-    <!-- ✅ Forgot Password trigger -->
-    <button id="showForgotPassword" style="margin-top:15px;">Forgot Password?</button>
-
-    <!-- ✅ Hidden Forgot Password form -->
+    <!-- Forgot Password -->
+    <button id="showForgotPassword" class="secondary-btn">Forgot Password?</button>
     <form id="forgotPasswordForm" style="display:none; margin-top:10px;">
-      <input type="email" id="forgotEmail" placeholder="Enter your email" required>
+      <div class="input-group">
+        <span class="icon">📧</span>
+        <input type="email" id="forgotEmail" placeholder="Enter your email" required>
+      </div>
       <button type="submit">Send Reset Link</button>
     </form>
     <pre id="forgotPasswordResponse"></pre>
+
+    <!-- Verify Transaction -->
+    <section>
+      <h2>Verify Transaction</h2>
+      <form id="verifyForm" class="form-section">
+        <div class="input-group">
+          <span class="icon">🔍</span>
+          <input type="text" id="verify_id" placeholder="Transaction ID" required>
+        </div>
+        <button type="submit">Verify</button>
+      </form>
+      <pre id="verifyResponse"></pre>
+    </section>
   </div>
 
-  <!-- ✅ Load JS after DOM is ready -->
+  <!-- Load JS -->
   <script src="member_login.js"></script>
 </body>
 </html>
