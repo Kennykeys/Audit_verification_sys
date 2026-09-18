@@ -5,17 +5,22 @@
   <title>Admin Login</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <div class="card">
+<body class="auth-shell">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <main id="main-content" class="card auth-card">
     <h1>Admin Login</h1>
     <form id="loginForm">
-      <input type="text" id="username" placeholder="Username" required>
-      <input type="password" id="password" placeholder="Password" required>
+      <label for="username">Administrator username</label>
+      <input type="text" id="username" name="username" placeholder="Enter administrator username" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Enter password" autocomplete="current-password" required>
       <button type="submit">Login</button>
     </form>
-    <pre id="loginResponse"></pre>
+    <pre id="loginResponse" class="status-panel" role="alert" aria-live="assertive" aria-atomic="true"></pre>
     <button onclick="goHome()">Home</button>
-  </div>
+  </main>
+  <script src="js/config.js"></script>
+  <script src="js/ui.js"></script>
   <script src="login.js"></script>
   <script>
     function goHome() {

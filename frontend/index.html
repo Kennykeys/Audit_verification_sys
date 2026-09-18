@@ -1,27 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
-<head link rel="icon" type="image/x-icon" href="favicon.ico">
+<head>
   <meta charset="UTF-8">
   <title>SACCO Dashboard</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="card">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <main id="main-content" class="card">
     <h1>Audit Dashboard</h1>
+    <p class="page-description">Review transaction records and use the available demonstration workflows.</p>
+    <p class="demo-notice"><strong>Demonstration data:</strong> Dashboard summary values are illustrative and will be replaced when live summary APIs are implemented.</p>
+    <p class="demo-notice" role="status"><strong>Integrity verification available:</strong> Submitted transaction identifiers are checked against deterministic SHA-256 records.</p>
+
+    <!-- Verify Transaction -->
+    <section>
+      <h2>Verify Transaction</h2>
+      <form id="verifyForm">
+        <label for="verify_id">Transaction ID</label>
+        <input type="text" id="verify_id" name="transaction_id" placeholder="Example: TX-001" autocomplete="off" required>
+        <button type="submit">Verify</button>
+      </form>
+      <pre id="verifyResponse" class="status-panel" role="status" aria-live="polite" aria-atomic="true"></pre>
+    </section>
+
     <!-- Mobile Money Simulation -->
     <section>
       <h2>Pay via Mobile Money</h2>
+      <p class="demo-notice"><strong>Simulation only:</strong> This workflow demonstrates mobile-money behavior and does not initiate a live payment.</p>
       <form id="mobileMoneyForm">
-        <select id="network">
+        <label for="network">Mobile-money network</label>
+        <select id="network" name="network">
           <option value="MTN MoMo">MTN MoMo</option>
           <option value="Airtel Money">Airtel Money</option>
         </select>
-        <input type="text" id="phoneNumber" placeholder="Phone Number" required>
-        <input type="number" id="mmAmount" placeholder="Amount" step="0.01" required>
-        <input type="text" id="mmMemberId" placeholder="Member ID" required>
+        <label for="phoneNumber">Phone number</label>
+        <input type="tel" id="phoneNumber" name="phone_number" placeholder="Example: 0772123456" inputmode="tel" autocomplete="tel" required>
+        <label for="mmAmount">Amount in Uganda shillings</label>
+        <input type="number" id="mmAmount" name="amount" placeholder="Example: 50000" min="1" step="1" inputmode="decimal" required>
+        <label for="mmMemberId">Member ID</label>
+        <input type="text" id="mmMemberId" name="member_id" placeholder="Example: M001" autocomplete="off" required>
 
         <!-- Description changed to dropdown -->
-        <select id="mmDescription" required>
+        <label for="mmDescription">Payment purpose</label>
+        <select id="mmDescription" name="description" required>
           <option value="">-- Select Fee --</option>
           <option value="Entry/Membership Fee">Entry / Membership Fee</option>
           <option value="Shares (Capital)">Shares (Capital)</option>
@@ -37,7 +59,7 @@
 
         <button type="submit">Proceed</button>
       </form>
-      <pre id="mobileMoneyResponse"></pre>
+      <pre id="mobileMoneyResponse" class="status-panel" role="status" aria-live="polite" aria-atomic="true"></pre>
     </section>
 
     <!-- Admin Section -->
@@ -70,8 +92,10 @@
     <section style="text-align:center; margin-top:30px;">
       <button onclick="memberLogout()">Logout</button>
     </section>
-  </div>
+  </main>
 
+  <script src="js/config.js"></script>
+  <script src="js/ui.js"></script>
   <script src="index.js"></script>
   <script>
     function memberLogout() {
