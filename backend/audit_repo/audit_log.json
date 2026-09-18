@@ -320,5 +320,25 @@
     "phone_number": "0751631327",
     "network": "Airtel Money",
     "timestamp": "2026-09-18T11:38:50.853171"
+  },
+  {
+    "transaction_id": "MM1789720994441",
+    "amount": 7000.0,
+    "member_id": "M006",
+    "description": "Loan Application Fee",
+    "method": "mobile_money",
+    "phone_number": "0751631327",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T11:43:14.605982"
+  },
+  {
+    "transaction_id": "MM1789723212779",
+    "amount": 120000.0,
+    "member_id": "M006",
+    "description": "Late Payment Penalty",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T12:20:12.479870"
   }
 ]

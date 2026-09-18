@@ -80,3 +80,25 @@ window.onload = () => {
     window.location.href = "member_login.html";
   }
 };
+// ---------------- TRANSACTION VERIFICATION ----------------
+
+document.getElementById("verifyForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const txId = document.getElementById("verify_id").value.trim();
+  const responseBox = document.getElementById("verifyResponse");
+
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/verify/${txId}`);
+    if (!res.ok) {
+      const error = await res.json();
+      responseBox.textContent = "❌ " + (error.detail || JSON.stringify(error));
+      return;
+    }
+
+    const result = await res.json();
+    responseBox.textContent = "✅ Transaction verification:\n" + JSON.stringify(result, null, 2);
+  } catch (err) {
+    responseBox.textContent = "❌ Error: " + err.message;
+  }
+});
