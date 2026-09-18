@@ -34,7 +34,7 @@ document.getElementById("mobileMoneyForm").addEventListener("submit", async (e) 
     // Step 2: Simulate short delay before backend call
     setTimeout(async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/record_mobile", {
+        const res = await fetch(`${window.AUDIT_APP_CONFIG.apiBaseUrl}/mobile_money`, {
           method: "POST",
           headers: {"Content-Type": "application/json"},
           body: JSON.stringify({
@@ -53,8 +53,7 @@ document.getElementById("mobileMoneyForm").addEventListener("submit", async (e) 
         }
 
         const result = await res.json();
-        responseBox.textContent = "✅ " + network + " payment recorded!\n" +
-          JSON.stringify(result, null, 2);
+        responseBox.textContent = "✅ " + result.transaction.network + " payment recorded!";
       } catch (err) {
         responseBox.textContent = "❌ Error: " + err.message;
       }
@@ -66,23 +65,58 @@ document.getElementById("mobileMoneyForm").addEventListener("submit", async (e) 
 
 // ---------------- TRANSACTION VERIFICATION ----------------
 
-document.getElementById("verifyForm")?.addEventListener("submit", async (e) => {
-  e.preventDefault();
+document.getElementById("verifyForm")?.addEventListener("submit", async (event) => {
+  event.preventDefault();
 
-  const txId = document.getElementById("verify_id").value.trim();
+  const transactionId = document.getElementById("verify_id").value.trim();
   const responseBox = document.getElementById("verifyResponse");
+  const submitButton = event.currentTarget.querySelector("button[type=\"submit\"]");
+
+  window.AuditUi.setStatus(responseBox, "Verifying transaction integrity...", "info");
+  window.AuditUi.setBusy(submitButton, true, "Verifying...");
 
   try {
-    const res = await fetch(`http://127.0.0.1:8000/verify/${txId}`);
-    if (!res.ok) {
-      const error = await res.json();
-      responseBox.textContent = "❌ " + (error.detail || JSON.stringify(error));
+    const response = await fetch(
+      `${window.AUDIT_APP_CONFIG.apiBaseUrl}/verify/${encodeURIComponent(transactionId)}`
+    );
+
+    let payload = {};
+    try {
+      payload = await response.json();
+    } catch (_error) {
+      payload = {};
+    }
+
+    if (!response.ok) {
+      window.AuditUi.setStatus(
+        responseBox,
+        payload.detail || "The transaction could not be verified.",
+        "error"
+      );
       return;
     }
 
-    const result = await res.json();
-    responseBox.textContent = "✅ Transaction verification:\n" + JSON.stringify(result, null, 2);
-  } catch (err) {
-    responseBox.textContent = "❌ Error: " + err.message;
+    if (payload.verified === true && payload.status === "verified") {
+      window.AuditUi.setStatus(
+        responseBox,
+        `Transaction ${payload.transaction_id} passed integrity verification.`,
+        "success"
+      );
+      return;
+    }
+
+    window.AuditUi.setStatus(
+      responseBox,
+      `Transaction ${payload.transaction_id} failed integrity verification and may have been altered.`,
+      "error"
+    );
+  } catch (_error) {
+    window.AuditUi.setStatus(
+      responseBox,
+      "The integrity verification service is unavailable. Try again later.",
+      "error"
+    );
+  } finally {
+    window.AuditUi.setBusy(submitButton, false);
   }
 });

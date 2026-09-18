@@ -6,102 +6,50 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="card">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <main id="main-content" class="card">
     <h1>Admin Transactions</h1>
 
-    <!-- Balance Display -->
-    <h3 id="balance">Current Balance: 0</h3>
-
-    <!-- Withdraw Form -->
+    <!-- Manual Transaction Form -->
     <section>
-      <h2>Withdraw Funds</h2>
-      <form id="withdrawForm">
-        <input type="number" id="withdrawAmount" placeholder="Amount" step="0.01" required>
-        <input type="text" id="withdrawMemberId" placeholder="Member ID" required>
-        <input type="text" id="withdrawDescription" placeholder="Description" required>
-        <input type="text" id="withdrawPhoneNumber" placeholder="Phone Number" required> <!-- ✅ added -->
-        <button type="submit">Withdraw</button>
+      <h2>Add Manual Transaction</h2>
+      <form id="addTransactionForm">
+        <label for="transactionId">Transaction ID</label>
+        <input type="text" id="transactionId" name="transaction_id" placeholder="Example: TX-001" autocomplete="off" required>
+        <label for="amount">Amount in Uganda shillings</label>
+        <input type="number" id="amount" name="amount" placeholder="Example: 50000" min="1" step="1" inputmode="decimal" required>
+        <label for="memberId">Member ID</label>
+        <input type="text" id="memberId" name="member_id" placeholder="Example: M001" autocomplete="off" required>
+        <label for="description">Description</label>
+        <input type="text" id="description" name="description" placeholder="Purpose of transaction" autocomplete="off" required>
+        <button type="submit">Add Transaction</button>
       </form>
-      <pre id="withdrawResponse"></pre>
-    </section>
-
-    <!-- Add New Member -->
-    <section>
-      <h2>Add New Member</h2>
-      <form id="addMemberForm" style="display:flex; gap:10px; flex-wrap:wrap;">
-        <input type="text" id="newMemberId" placeholder="Member ID" required>
-        <input type="text" id="newMemberPassword" placeholder="Password" required>
-        <input type="email" id="newMemberEmail" placeholder="Email" required> <!-- ✅ inline -->
-        <button type="submit">Add Member</button>
-      </form>
-      <!-- ✅ Strong password requirements message -->
-      <small id="passwordRequirements" style="display:block; margin-top:5px;">
-        Password must contain at least 8 characters, including uppercase, lowercase, number, and special character.
-      </small>
-      <pre id="addMemberResponse"></pre>
-    </section>
-
-    <!-- Reset Password -->
-    <section>
-      <h2>Reset Password</h2>
-      <form id="resetPasswordForm" style="display:flex; gap:10px; flex-wrap:wrap;">
-        <input type="email" id="resetEmail" placeholder="Email" required>
-        <button type="submit">Reset Password</button>
-      </form>
-      <pre id="resetPasswordResponse"></pre>
-    </section>
-
-    <!-- View Members Button -->
-    <section>
-      <button onclick="toggleMembers()">View All Members</button>
-    </section>
-
-    <!-- Members Table -->
-    <section id="membersSection" style="display:none; margin-top:20px;">
-      <h2>All Members</h2>
-      <!-- 🔎 Search Members -->
-      <input type="text" id="searchMembersBox" placeholder="Search Members by ID or Password">
-      <button onclick="searchMembers()">Search</button>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Member ID</th>
-            <th>Password</th>
-            <th>Email</th> <!-- ✅ added -->
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="membersTableBody">
-          <tr><td colspan="4">Loading...</td></tr>
-        </tbody>
-      </table>
+      <pre id="transactionsResponse" class="status-panel" role="status" aria-live="polite" aria-atomic="true"></pre>
     </section>
 
     <!-- Stored Transactions -->
     <section>
       <h2>Stored Transactions</h2>
-      <!-- 🔎 Search Transactions -->
-      <input type="text" id="searchTransactionsBox" placeholder="Search Transactions by ID, Member, or Description">
-      <button onclick="searchTransactions()">Search</button>
-
-      <table>
+      <div class="table-container" tabindex="0" role="region" aria-label="Stored transactions">
+      <table id="transactionsTable">
         <thead>
           <tr>
-            <th>Transaction ID</th>
-            <th>Amount</th>
-            <th>Member ID</th>
-            <th>Description</th>
-            <th>Date/Time</th>
-            <th>Method</th>
-            <th>Network</th>
-            <th>Phone</th>
+            <th scope="col">Transaction ID</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Member ID</th>
+            <th scope="col">Description</th>
+            <th scope="col">Date and time</th>
+            <th scope="col">Method</th>
+            <th scope="col">Network</th>
+            <th scope="col">Phone</th>
+            <th scope="col">Hash</th>
           </tr>
         </thead>
         <tbody id="transactionsTableBody">
-          <tr><td colspan="8">Loading...</td></tr>
+          <tr><td colspan="9">Loading...</td></tr>
         </tbody>
       </table>
+      </div>
     </section>
 
     <!-- Navigation -->
@@ -109,8 +57,10 @@
       <button onclick="window.location.href='index.html'">Home</button>
       <button onclick="memberLogout()">Logout</button>
     </section>
-  </div>
+  </main>
 
+  <script src="js/config.js"></script>
+  <script src="js/ui.js"></script>
   <script src="transactions.js"></script>
   <script>
     function memberLogout() {
@@ -119,20 +69,6 @@
       alert("You have been logged out.");
       window.location.href = "member_login.html";
     }
-
-    function toggleMembers() {
-      const section = document.getElementById("membersSection");
-      if (section.style.display === "none") {
-        section.style.display = "block";
-        loadMembers();
-      } else {
-        section.style.display = "none";
-      }
-    }
-
-    window.onload = () => {
-      loadTransactions();
-    };
   </script>
 </body>
 </html>

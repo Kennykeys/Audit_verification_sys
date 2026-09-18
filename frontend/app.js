@@ -4,7 +4,7 @@ document.getElementById("verifyForm").addEventListener("submit", async (e) => {
   const id = document.getElementById("verify_id").value;
 
   try {
-    const res = await fetch(`http://127.0.0.1:8000/verify/${id}`);
+    const res = await fetch(`${window.AUDIT_APP_CONFIG.apiBaseUrl}/verify/${id}`);
     const result = await res.json();
     document.getElementById("verifyResponse").textContent = JSON.stringify(result, null, 2);
   } catch (err) {
@@ -55,7 +55,7 @@ async function simulatePayment() {
   };
 
   try {
-    const res = await fetch("http://127.0.0.1:8000/record_mobile", {
+    const res = await fetch(`${window.AUDIT_APP_CONFIG.apiBaseUrl}/record_mobile`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(data)

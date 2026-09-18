@@ -1,6 +1,11 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
+try:
+    from backend.integrity import compute_transaction_hash, verify_transaction_hash
+except ModuleNotFoundError:
+    from integrity import compute_transaction_hash, verify_transaction_hash
 import time, json, os, secrets, random, re, bcrypt, smtplib
 from datetime import datetime
 from email.mime.text import MIMEText
@@ -21,7 +26,6 @@ AUDIT_LOG = os.path.join(AUDIT_FOLDER, "audit_log.json")
 MEMBERS_FILE = os.path.join(AUDIT_FOLDER, "members.json")
 os.makedirs(AUDIT_FOLDER, exist_ok=True)
 
-# ---------------- PASSWORD HELPERS ----------------
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
@@ -29,7 +33,6 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
 
-# ---------------- INITIAL MEMBERS ----------------
 if not os.path.exists(MEMBERS_FILE):
     members = {
         "M001": {"password": hash_password("user"), "email": "user1@example.com", "lockout_until": 0, "attempts": 3},
@@ -47,7 +50,8 @@ def save_members(members):
     with open(MEMBERS_FILE, "w") as f:
         json.dump(members, f, indent=2)
 
-# ---------------- EMAIL CONFIG ----------------
+
+# ---------------- EMAIL CONFIGURATION ----------------
 SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "")
@@ -57,40 +61,35 @@ def send_transaction_email(recipient_email: str, transaction_id: str, amount: fl
     if not SMTP_USER or not SMTP_PASS:
         print("Email notification skipped: SMTP credentials are not configured.")
         return
-    msg = MIMEMultipart()
-    msg["From"] = SMTP_USER
-    msg["To"] = recipient_email
-    msg["Subject"] = "Transaction Confirmation"
-
-    body = f"""
-    Dear Member,
-
-    Your transaction has been recorded successfully.
-    Transaction ID: {transaction_id}
-    Amount: {amount}
-    Description: {description}
-
-    Thank you,
-    Audit Verification System
-    """
-    msg.attach(MIMEText(body, "plain"))
-
+    message = MIMEMultipart()
+    message["From"] = SMTP_USER
+    message["To"] = recipient_email
+    message["Subject"] = "Transaction Confirmation"
+    body = (
+        "Dear Member,\n\n"
+        "Your transaction has been recorded successfully.\n"
+        f"Transaction ID: {transaction_id}\n"
+        f"Amount: {amount}\n"
+        f"Description: {description}\n\n"
+        "Audit Verification System"
+    )
+    message.attach(MIMEText(body, "plain"))
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
             server.login(SMTP_USER, SMTP_PASS)
-            server.sendmail(SMTP_USER, recipient_email, msg.as_string())
-    except Exception as e:
-        print("Email sending failed:", e)
+            server.sendmail(SMTP_USER, recipient_email, message.as_string())
+    except Exception as error:
+        print(f"Email notification failed: {error}")
 
-def get_member_email(member_id: str) -> str:
+def get_member_email(member_id: str):
     members = load_members()
     member = members.get(member_id)
     if member:
         return member.get("email")
     return None
 
-# ---------------- DATA MODELS ----------------
+
 class LoginRequest(BaseModel):
     member_id: str
     password: str
@@ -153,6 +152,7 @@ def admin_verify(req: AdminVerifyRequest):
         raise HTTPException(status_code=401, detail="Invalid code")
     del admin_codes[req.member_id]
     return {"success": True, "message": "Admin login successful"}
+
 # ---------------- MEMBER LOGIN ----------------
 @app.post("/member_login")
 def member_login(req: LoginRequest):
@@ -255,6 +255,7 @@ def modify_member(member_id: str, req: ModifyMemberRequest):
     }
     save_members(members)
     return {"success": True, "message": f"Member {member_id} modified to {req.new_member_id} successfully"}
+
 # ---------------- TRANSACTIONS ----------------
 @app.get("/transactions")
 def get_transactions():
@@ -263,10 +264,9 @@ def get_transactions():
             data = json.load(f)
         if not isinstance(data, list):
             data = []
-    except Exception:
-        data = []
-    total_amount = sum(tx.get("amount", 0) for tx in data)
-    return {"transactions": data, "total_amount_received": total_amount}
+        return {"transactions": data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading transactions: {str(e)}")
 
 @app.post("/transactions")
 def add_transaction(tx: Transaction):
@@ -276,80 +276,93 @@ def add_transaction(tx: Transaction):
                 data = json.load(f)
             except:
                 data = []
-    except FileNotFoundError:
-        data = []
 
-    new_tx = {
-        "transaction_id": tx.transaction_id,
-        "amount": tx.amount,
-        "member_id": tx.member_id,
-        "description": tx.description,
-        "method": tx.method,
-        "phone_number": tx.phone_number
-    }
-    data.append(new_tx)
-    with open(AUDIT_LOG, "w") as f:
-        json.dump(data, f, indent=2)
-
-    # 🔑 Email integration
-    recipient_email = get_member_email(tx.member_id)
-    if recipient_email:
-        send_transaction_email(recipient_email, tx.transaction_id, tx.amount, tx.description)
-
-    return {"success": True, "message": "Transaction added successfully"}
-
-# ---------------- MOBILE MONEY ----------------
-@app.post("/record_mobile")
-def record_mobile(req: MobileMoneyRequest):
-    try:
-        # Load existing transactions
-        try:
-            with open(AUDIT_LOG, "r") as f:
-                data = json.load(f)
-        except FileNotFoundError:
-            data = []
-
-        # Generate a transaction ID
-        tx_id = f"MM{int(time.time())}{random.randint(100,999)}"
+        if any(record.get("transaction_id") == tx.transaction_id for record in data):
+            raise HTTPException(status_code=409, detail="Transaction ID already exists")
 
         new_tx = {
-            "transaction_id": tx_id,
-            "amount": req.amount,
-            "member_id": req.member_id,
-            "description": req.description,
-            "method": "mobile_money",
-            "phone_number": req.phone_number,
-            "network": req.network,
-            "timestamp": datetime.now().isoformat()
+            "transaction_id": tx.transaction_id,
+            "amount": tx.amount,
+            "member_id": tx.member_id,
+            "description": tx.description,
+            "date_time": datetime.now().isoformat(),
+            "method": tx.method,
+            "network": None,
+            "phone_number": None
         }
-
+        new_tx["hash"] = compute_transaction_hash(new_tx)
         data.append(new_tx)
+
         with open(AUDIT_LOG, "w") as f:
             json.dump(data, f, indent=2)
 
-        # 🔑 Email integration
-        recipient_email = get_member_email(req.member_id)
+        recipient_email = get_member_email(tx.member_id)
         if recipient_email:
-            send_transaction_email(recipient_email, tx_id, req.amount, req.description)
+            send_transaction_email(recipient_email, tx.transaction_id, tx.amount, tx.description)
 
-        return {"success": True, "message": "Mobile money transaction recorded", "transaction": new_tx}
+        return {"success": True, "transaction": new_tx}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Error adding transaction: {str(e)}")
 
-# ---------------- VERIFY TRANSACTION ----------------
+
 @app.get("/verify/{transaction_id}")
 def verify_transaction(transaction_id: str):
     try:
+        with open(AUDIT_LOG, "r") as audit_file:
+            data = json.load(audit_file)
+        transaction = next((record for record in data if record.get("transaction_id") == transaction_id), None)
+        if transaction is None:
+            raise HTTPException(status_code=404, detail="Transaction not found")
+        verified = verify_transaction_hash(transaction)
+        return {"transaction_id": transaction_id, "verified": verified, "status": "verified" if verified else "tampered"}
+    except HTTPException:
+        raise
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=f"Error verifying transaction: {error}") from error
+
+# ---------------- MOBILE MONEY (SIMULATION) ----------------
+@app.post("/mobile_money")
+def simulate_mobile_money(req: MobileMoneyRequest):
+    try:
         with open(AUDIT_LOG, "r") as f:
-            data = json.load(f)
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="No transactions found")
+            try:
+                data = json.load(f)
+            except:
+                data = []
 
-    if not isinstance(data, list):
-        raise HTTPException(status_code=404, detail="Invalid transaction log format")
+        success = random.choice([True, True, False])  # 2/3 chance success
 
-    for tx in data:
-        if tx.get("transaction_id") == transaction_id:
-            return {"success": True, "transaction": tx}
+        if not success:
+            raise HTTPException(status_code=402, detail=f"{req.network} payment failed (simulation).")
 
-    raise HTTPException(status_code=404, detail="Transaction not found")
+        transaction_id = f"MM-{time.time_ns()}"
+        if any(record.get("transaction_id") == transaction_id for record in data):
+            raise HTTPException(status_code=409, detail="Transaction ID already exists")
+
+        new_tx = {
+            "transaction_id": transaction_id,
+            "amount": req.amount,
+            "member_id": req.member_id,
+            "description": req.description,
+            "date_time": datetime.now().isoformat(),
+            "method": "mobile_money",
+            "network": req.network,
+            "phone_number": req.phone_number
+        }
+        new_tx["hash"] = compute_transaction_hash(new_tx)
+        data.append(new_tx)
+
+        with open(AUDIT_LOG, "w") as f:
+            json.dump(data, f, indent=2)
+
+        recipient_email = get_member_email(req.member_id)
+        if recipient_email:
+            send_transaction_email(recipient_email, transaction_id, req.amount, req.description)
+
+        return {"success": True, "transaction": new_tx}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error simulating mobile money: {str(e)}")

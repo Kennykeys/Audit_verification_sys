@@ -29,11 +29,5 @@
     "password": "$2b$12$ShB/M9C27V3dj0rRduEMqeC.Le0I9zSU1rgUWimlOFeGmn.vgxyqa",
     "lockout_until": 0,
     "attempts": 3
-  },
-  "M007": {
-    "password": "$2b$12$X0F1xoN7UQzCpTpNn5HO2.OE6ZIUm3ixjazIM977Z/V7eav4Lj21m",
-    "email": "user2@gmail.com",
-    "lockout_until": 0,
-    "attempts": 3
   }
 }

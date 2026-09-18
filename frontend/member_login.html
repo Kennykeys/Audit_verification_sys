@@ -5,50 +5,22 @@
   <title>Member Login</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <div class="card">
+<body class="auth-shell">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <main id="main-content" class="card auth-card">
     <h1>Member Login</h1>
-
-    <!-- Login Form -->
-    <form id="loginForm" class="form-section">
-      <div class="input-group">
-        <span class="icon">🆔</span>
-        <input type="text" id="memberId" placeholder="Member ID" required>
-      </div>
-      <div class="input-group">
-        <span class="icon">🔑</span>
-        <input type="password" id="password" placeholder="Password" required>
-      </div>
+    <form id="loginForm">
+      <label for="memberId">Member ID</label>
+      <input type="text" id="memberId" name="member_id" placeholder="Example: M001" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" placeholder="Enter password" autocomplete="current-password" required>
       <button type="submit">Login</button>
     </form>
-    <pre id="loginResponse"></pre>
+    <pre id="loginResponse" class="status-panel" role="alert" aria-live="assertive" aria-atomic="true"></pre>
+  </main>
 
-    <!-- Forgot Password -->
-    <button id="showForgotPassword" class="secondary-btn">Forgot Password?</button>
-    <form id="forgotPasswordForm" style="display:none; margin-top:10px;">
-      <div class="input-group">
-        <span class="icon">📧</span>
-        <input type="email" id="forgotEmail" placeholder="Enter your email" required>
-      </div>
-      <button type="submit">Send Reset Link</button>
-    </form>
-    <pre id="forgotPasswordResponse"></pre>
-
-    <!-- Verify Transaction -->
-    <section>
-      <h2>Verify Transaction</h2>
-      <form id="verifyForm" class="form-section">
-        <div class="input-group">
-          <span class="icon">🔍</span>
-          <input type="text" id="verify_id" placeholder="Transaction ID" required>
-        </div>
-        <button type="submit">Verify</button>
-      </form>
-      <pre id="verifyResponse"></pre>
-    </section>
-  </div>
-
-  <!-- Load JS -->
+  <script src="js/config.js"></script>
+  <script src="js/ui.js"></script>
   <script src="member_login.js"></script>
 </body>
 </html>
