@@ -48,12 +48,15 @@ def save_members(members):
         json.dump(members, f, indent=2)
 
 # ---------------- EMAIL CONFIG ----------------
-SMTP_SERVER = "smtp.gmail.com"   # or "smtp.office365.com"
-SMTP_PORT = 587
-SMTP_USER = "keyskenneth256@gmail.com"
-SMTP_PASS = "mama frqo ozoe pcjh"  # use app password
+SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SMTP_USER", "")
+SMTP_PASS = os.getenv("SMTP_PASS", "")
 
 def send_transaction_email(recipient_email: str, transaction_id: str, amount: float, description: str):
+    if not SMTP_USER or not SMTP_PASS:
+        print("Email notification skipped: SMTP credentials are not configured.")
+        return
     msg = MIMEMultipart()
     msg["From"] = SMTP_USER
     msg["To"] = recipient_email
