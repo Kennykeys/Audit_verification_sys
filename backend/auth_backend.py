@@ -1,8 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import time, json, os, secrets, random, re, bcrypt
+import time, json, os, secrets, random, re, bcrypt, smtplib
 from datetime import datetime
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 app = FastAPI()
 
@@ -19,6 +21,7 @@ AUDIT_LOG = os.path.join(AUDIT_FOLDER, "audit_log.json")
 MEMBERS_FILE = os.path.join(AUDIT_FOLDER, "members.json")
 os.makedirs(AUDIT_FOLDER, exist_ok=True)
 
+# ---------------- PASSWORD HELPERS ----------------
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
@@ -26,6 +29,7 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
 
+# ---------------- INITIAL MEMBERS ----------------
 if not os.path.exists(MEMBERS_FILE):
     members = {
         "M001": {"password": hash_password("user"), "email": "user1@example.com", "lockout_until": 0, "attempts": 3},
@@ -42,6 +46,46 @@ def load_members():
 def save_members(members):
     with open(MEMBERS_FILE, "w") as f:
         json.dump(members, f, indent=2)
+
+# ---------------- EMAIL CONFIG ----------------
+SMTP_SERVER = "smtp.gmail.com"   # or "smtp.office365.com"
+SMTP_PORT = 587
+SMTP_USER = "keyskenneth256@gmail.com"
+SMTP_PASS = "mama frqo ozoe pcjh"  # use app password
+
+def send_transaction_email(recipient_email: str, transaction_id: str, amount: float, description: str):
+    msg = MIMEMultipart()
+    msg["From"] = SMTP_USER
+    msg["To"] = recipient_email
+    msg["Subject"] = "Transaction Confirmation"
+
+    body = f"""
+    Dear Member,
+
+    Your transaction has been recorded successfully.
+    Transaction ID: {transaction_id}
+    Amount: {amount}
+    Description: {description}
+
+    Thank you,
+    Audit Verification System
+    """
+    msg.attach(MIMEText(body, "plain"))
+
+    try:
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.sendmail(SMTP_USER, recipient_email, msg.as_string())
+    except Exception as e:
+        print("Email sending failed:", e)
+
+def get_member_email(member_id: str) -> str:
+    members = load_members()
+    member = members.get(member_id)
+    if member:
+        return member.get("email")
+    return None
 
 # ---------------- DATA MODELS ----------------
 class LoginRequest(BaseModel):
@@ -243,6 +287,12 @@ def add_transaction(tx: Transaction):
     data.append(new_tx)
     with open(AUDIT_LOG, "w") as f:
         json.dump(data, f, indent=2)
+
+    # 🔑 Email integration
+    recipient_email = get_member_email(tx.member_id)
+    if recipient_email:
+        send_transaction_email(recipient_email, tx.transaction_id, tx.amount, tx.description)
+
     return {"success": True, "message": "Transaction added successfully"}
 
 # ---------------- MOBILE MONEY ----------------
@@ -273,6 +323,11 @@ def record_mobile(req: MobileMoneyRequest):
         data.append(new_tx)
         with open(AUDIT_LOG, "w") as f:
             json.dump(data, f, indent=2)
+
+        # 🔑 Email integration
+        recipient_email = get_member_email(req.member_id)
+        if recipient_email:
+            send_transaction_email(recipient_email, tx_id, req.amount, req.description)
 
         return {"success": True, "message": "Mobile money transaction recorded", "transaction": new_tx}
     except Exception as e:

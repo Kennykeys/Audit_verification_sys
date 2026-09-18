@@ -190,5 +190,115 @@
     "description": "Loan application fee",
     "method": "withdraw",
     "phone_number": "0753588167"
+  },
+  {
+    "transaction_id": "MM1789710087100",
+    "amount": 40000.0,
+    "member_id": "M001",
+    "description": "Annual Subscription",
+    "method": "mobile_money",
+    "phone_number": "0751631327",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T08:41:27.474319"
+  },
+  {
+    "transaction_id": "MM1789712731972",
+    "amount": 50000.0,
+    "member_id": "M006",
+    "description": "Shares (Capital)",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T09:25:31.164485"
+  },
+  {
+    "transaction_id": "MM1789713686289",
+    "amount": 40000.0,
+    "member_id": "M006",
+    "description": "Account Maintenance Fee",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "MTN MoMo",
+    "timestamp": "2026-09-18T09:41:26.517565"
+  },
+  {
+    "transaction_id": "MM1789715466769",
+    "amount": 30000.0,
+    "member_id": "M006",
+    "description": "Annual Subscription",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T10:11:06.854847"
+  },
+  {
+    "transaction_id": "MM1789715559680",
+    "amount": 80000.0,
+    "member_id": "M006",
+    "description": "Annual Subscription",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T10:12:39.736850"
+  },
+  {
+    "transaction_id": "MM1789716034213",
+    "amount": 60000.0,
+    "member_id": "M006",
+    "description": "Loan Application Fee",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T10:20:34.344412"
+  },
+  {
+    "transaction_id": "MM1789716103370",
+    "amount": 50000.0,
+    "member_id": "M006",
+    "description": "Shares (Capital)",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T10:21:43.063492"
+  },
+  {
+    "transaction_id": "MM1789716294698",
+    "amount": 50000.0,
+    "member_id": "M006",
+    "description": "Shares (Capital)",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T10:24:54.948613"
+  },
+  {
+    "transaction_id": "MM1789716435929",
+    "amount": 70000.0,
+    "member_id": "M006",
+    "description": "Late Payment Penalty",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T10:27:15.546348"
+  },
+  {
+    "transaction_id": "MM1789716482918",
+    "amount": 70000.0,
+    "member_id": "M006",
+    "description": "Late Payment Penalty",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T10:28:02.838400"
+  },
+  {
+    "transaction_id": "MM1789716501873",
+    "amount": 50000.0,
+    "member_id": "M006",
+    "description": "Withdrawal Fee",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T10:28:21.679346"
   }
 ]
