@@ -70,3 +70,18 @@ class IntegrityGraphResult(BaseModel):
     failure_type: str | None = None
     nodes: list[IntegrityGraphNode]
     edges: list[IntegrityGraphEdge]
+
+
+class AuthenticationLoginRequest(BaseModel):
+    username: str = Field(min_length=1, max_length=128)
+    password: str = Field(min_length=1, max_length=1024)
+
+class AuthenticatedPrincipal(BaseModel):
+    username: str
+    role: str
+
+class AuthenticationTokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    expires_at: datetime
+    principal: AuthenticatedPrincipal

@@ -10,7 +10,7 @@ if __package__ in {None, ""}:
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.integrity import (
@@ -25,13 +25,15 @@ from backend.integrity import (
     verify_legacy_hash,
 )
 
+from backend.auth import AuthenticationService
 from backend.config import Settings
 from backend.repository import AuditLedgerRepository, DuplicateTransactionError, LedgerCorruptionError
-from backend.schemas import IntegrityGraphResult, LedgerIntegrityResult
+from backend.schemas import AuthenticationLoginRequest, AuthenticationTokenResponse, AuthenticatedPrincipal, IntegrityGraphResult, LedgerIntegrityResult
 from pydantic import BaseModel, Field
 from backend.services.audit_service import AuditService
 
 settings = Settings.from_environment()
+authentication_service = AuthenticationService(settings)
 
 app = FastAPI(title="Tamper-Evident Audit System", version="4.0.0")
 
@@ -68,6 +70,15 @@ def get_audit_repository():
 def get_audit_service():
     return AuditService(get_audit_repository())
 
+def get_authentication_service():
+    return authentication_service
+
+def require_authenticated_principal(authorization: str | None = Header(default=None)):
+    return get_authentication_service().authenticate(authorization)
+
+def require_administrator(authorization: str | None = Header(default=None)):
+    return get_authentication_service().require_role(authorization, "administrator")
+
 
 def load_audit_log():
     try:
@@ -93,8 +104,22 @@ def add_chain_fields(entry, log):
     return entry
 
 
+@app.post("/auth/login", response_model=AuthenticationTokenResponse)
+def login(request: AuthenticationLoginRequest):
+    token, principal, expires_at = get_authentication_service().login(request.username, request.password)
+    return AuthenticationTokenResponse(access_token=token, expires_at=expires_at, principal=principal)
+
+@app.get("/auth/me", response_model=AuthenticatedPrincipal)
+def authenticated_principal(principal: AuthenticatedPrincipal = Depends(require_authenticated_principal)):
+    return principal
+
+@app.post("/auth/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(authorization: str | None = Header(default=None)):
+    get_authentication_service().logout(authorization)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
 @app.post("/record")
-def record_transaction(request: RecordTransactionRequest):
+def record_transaction(request: RecordTransactionRequest, _principal: AuthenticatedPrincipal = Depends(require_administrator)):
     entry = request.model_dump()
     entry["created_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
     entry["method"] = "Admin"
@@ -109,7 +134,7 @@ def record_transaction(request: RecordTransactionRequest):
 
 
 @app.post("/record_mobile")
-def record_mobile_transaction(request: RecordMobileRequest):
+def record_mobile_transaction(request: RecordMobileRequest, _principal: AuthenticatedPrincipal = Depends(require_administrator)):
     entry = request.model_dump()
     entry["created_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
     entry["transaction_id"] = "MM-" + uuid.uuid4().hex
@@ -143,5 +168,5 @@ def get_integrity_graph():
 
 
 @app.get("/transactions")
-def get_transactions():
+def get_transactions(_principal: AuthenticatedPrincipal = Depends(require_administrator)):
     return {"transactions": load_audit_log()}

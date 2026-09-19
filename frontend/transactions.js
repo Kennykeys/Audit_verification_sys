@@ -7,6 +7,17 @@
   const transactionSubmitButton = transactionForm.querySelector('button[type="submit"]');
   const transactionSummary = document.getElementById('transactionSummary');
 
+  function installLogoutButton() {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = 'Logout';
+    button.addEventListener('click', async () => {
+      try { await window.AuditApi.request('/auth/logout', { method: 'POST', redirectOnAuthFailure: false }); }
+      finally { window.AuditApi.clearToken(); window.AuditApi.redirectToLogin(); }
+    });
+    transactionForm.parentElement.insertBefore(button, transactionForm);
+  }
+
   function renderTableState(message) {
     window.AuditUi.clearElement(transactionTableBody);
     transactionTableBody.appendChild(window.AuditUi.createEmptyRow(9, message));
@@ -89,10 +100,8 @@
     }
   });
 
-  document.addEventListener('DOMContentLoaded', () => {
-    loadTransactions().catch(() => {
-      renderTableState('The transaction service is unavailable. Try again later.');
-      window.AuditUi.setStatus(transactionResponse, 'Transactions could not be loaded.', 'error');
-    });
+  document.addEventListener('DOMContentLoaded', async () => {
+    try { await window.AuditApi.request('/auth/me'); installLogoutButton(); await loadTransactions(); }
+    catch (error) { renderTableState('Administrator authentication is required.'); window.AuditUi.setStatus(transactionResponse, error.message || 'Authentication failed.', 'error'); }
   });
 })();

@@ -167,33 +167,7 @@ class ResetPasswordRequest(BaseModel):
 class ForgotPasswordRequest(BaseModel):
     email: str
 
-# ---------------- ADMIN 2FA ----------------
-admin_codes = {}
-
-class AdminVerifyRequest(BaseModel):
-    member_id: str
-    code: str
-
-@app.post("/admin_login")
-def admin_login(req: LoginRequest):
-    if req.member_id == "admin" and req.password == "admin":
-        code = str(secrets.randbelow(1000000)).zfill(6)
-        admin_codes[req.member_id] = {"code": code, "expires": time.time() + 300}
-        return {"step": "2fa_required", "message": "Enter the 2FA code", "code": code}
-    else:
-        raise HTTPException(status_code=401, detail="Invalid admin credentials")
-
-@app.post("/admin_verify")
-def admin_verify(req: AdminVerifyRequest):
-    record = admin_codes.get(req.member_id)
-    if not record:
-        raise HTTPException(status_code=400, detail="No 2FA code generated")
-    if time.time() > record["expires"]:
-        raise HTTPException(status_code=400, detail="Code expired")
-    if req.code != record["code"]:
-        raise HTTPException(status_code=401, detail="Invalid code")
-    del admin_codes[req.member_id]
-    return {"success": True, "message": "Admin login successful"}
+# Legacy administrator authentication removed. Use backend.main /auth endpoints.
 
 # ---------------- MEMBER LOGIN ----------------
 @app.post("/member_login")
