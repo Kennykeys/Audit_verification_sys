@@ -6,7 +6,11 @@
     "description": "Loan Payment Installation",
     "created_at": "2026-09-02 23:26:09",
     "method": "Admin",
-    "hash": "8d7d484c65743442436ff8d303ffe8fa7f364a82580edb7554fee91ab03c9766"
+    "hash": "8d7d484c65743442436ff8d303ffe8fa7f364a82580edb7554fee91ab03c9766",
+    "schema_version": 1,
+    "sequence": 1,
+    "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "entry_hash": "0741787fbcc0e2645b6f61bbe097bbe88c6b83fb5e911bf985657be2570ca221"
   },
   {
     "transaction_id": "MM1788381851531",
@@ -15,7 +19,11 @@
     "description": "Mobile Money Payment (AIRTEL)",
     "created_at": "2026-09-02 23:44:11",
     "method": "Mobile Money",
-    "hash": "9b0efe2fbc3c3a1d13a202fe9f3ad8b82239b6eb770e2d066e428e308c3c2bd0"
+    "hash": "9b0efe2fbc3c3a1d13a202fe9f3ad8b82239b6eb770e2d066e428e308c3c2bd0",
+    "schema_version": 1,
+    "sequence": 2,
+    "previous_hash": "0741787fbcc0e2645b6f61bbe097bbe88c6b83fb5e911bf985657be2570ca221",
+    "entry_hash": "fee78f9199a6cc9845296ee21dc7071f49e0dadcb8f6d7056c0b435ef62b81a5"
   },
   {
     "transaction_id": "MM1788415311567",
@@ -24,7 +32,11 @@
     "description": "Mobile Money Payment (AIRTEL)",
     "created_at": "2026-09-03 09:01:52",
     "method": "Mobile Money",
-    "hash": "cad46a6748dfe20e2918a174973fe83a62539060d5f12eaf0cea7fe6506074e5"
+    "hash": "cad46a6748dfe20e2918a174973fe83a62539060d5f12eaf0cea7fe6506074e5",
+    "schema_version": 1,
+    "sequence": 3,
+    "previous_hash": "fee78f9199a6cc9845296ee21dc7071f49e0dadcb8f6d7056c0b435ef62b81a5",
+    "entry_hash": "00f65d1c4a519ad478ec28b2d6540b2346a063c58ef0b45f92b842e628753467"
   },
   {
     "transaction_id": "MM1788415313057",
@@ -33,7 +45,11 @@
     "description": "Mobile Money Payment (AIRTEL)",
     "created_at": "2026-09-03 09:01:53",
     "method": "Mobile Money",
-    "hash": "9f22b6f70e86e9a6cfff00f64f003b442aaeaee1b58c04350ce50cef4e5bfecc"
+    "hash": "9f22b6f70e86e9a6cfff00f64f003b442aaeaee1b58c04350ce50cef4e5bfecc",
+    "schema_version": 1,
+    "sequence": 4,
+    "previous_hash": "00f65d1c4a519ad478ec28b2d6540b2346a063c58ef0b45f92b842e628753467",
+    "entry_hash": "8bb63382172da8c29f7a1bb940c84d650e9d0cb940cbccb0ef1b1f361a6d7002"
   },
   {
     "transaction_id": "MM1788415313241",
@@ -42,7 +58,11 @@
     "description": "Mobile Money Payment (AIRTEL)",
     "created_at": "2026-09-03 09:01:53",
     "method": "Mobile Money",
-    "hash": "704ab55ade7425c3d3d222a98bc9d25011ffe52f4f76af6d16bac30327ee31d2"
+    "hash": "704ab55ade7425c3d3d222a98bc9d25011ffe52f4f76af6d16bac30327ee31d2",
+    "schema_version": 1,
+    "sequence": 5,
+    "previous_hash": "8bb63382172da8c29f7a1bb940c84d650e9d0cb940cbccb0ef1b1f361a6d7002",
+    "entry_hash": "2ba6f72de50cd02ecbda0dfb6e55d7c1ac60eb533e5983983a75c36a26b0d367"
   },
   {
     "transaction_id": "MM1788456808528",
@@ -51,7 +71,11 @@
     "description": "Mobile Money Payment (AIRTEL)",
     "created_at": "2026-09-03 20:33:28",
     "method": "Mobile Money",
-    "hash": "f245edef0460f2ef0874ca31b9a92cbd11233979a631c309b2a9b932cfaffa02"
+    "hash": "f245edef0460f2ef0874ca31b9a92cbd11233979a631c309b2a9b932cfaffa02",
+    "schema_version": 1,
+    "sequence": 6,
+    "previous_hash": "2ba6f72de50cd02ecbda0dfb6e55d7c1ac60eb533e5983983a75c36a26b0d367",
+    "entry_hash": "7f9701cc4928fab4d53d2b3cc123c0a0677812613c97c5c55ef14e700831605a"
   },
   {
     "transaction_id": "MM1788456917204",
@@ -60,7 +84,11 @@
     "description": "Mobile Money Payment (MTN)",
     "created_at": "2026-09-03 20:35:17",
     "method": "Mobile Money",
-    "hash": "462c6e80d2256cd6bea44dd232237151d653730984f5b51c5d159a4ecc4d04b5"
+    "hash": "462c6e80d2256cd6bea44dd232237151d653730984f5b51c5d159a4ecc4d04b5",
+    "schema_version": 1,
+    "sequence": 7,
+    "previous_hash": "7f9701cc4928fab4d53d2b3cc123c0a0677812613c97c5c55ef14e700831605a",
+    "entry_hash": "5c8961933d778a81f7a4f1d21d3f14f43ca832eb4d5bc2801e702cce77b81c12"
   },
   {
     "transaction_id": "MM-1788952489",
@@ -71,7 +99,11 @@
     "method": "mobile_money",
     "network": "Airtel Money",
     "phone_number": "0751631327",
-    "hash": -4333102340398946235
+    "hash": -4333102340398946235,
+    "schema_version": 1,
+    "sequence": 8,
+    "previous_hash": "5c8961933d778a81f7a4f1d21d3f14f43ca832eb4d5bc2801e702cce77b81c12",
+    "entry_hash": "f80c98e4c4e4ceb262d437e3813df2da60a2b7baa6be8da046b85eb3eb769162"
   },
   {
     "transaction_id": "MM-1788957758",
@@ -82,7 +114,11 @@
     "method": "mobile_money",
     "network": "Airtel Money",
     "phone_number": "0751631327",
-    "hash": -3914571602158866085
+    "hash": -3914571602158866085,
+    "schema_version": 1,
+    "sequence": 9,
+    "previous_hash": "f80c98e4c4e4ceb262d437e3813df2da60a2b7baa6be8da046b85eb3eb769162",
+    "entry_hash": "170dbce3bc394e0f0043e7767791e89fcd4e62b14a9d936c9882ff6654faab35"
   },
   {
     "transaction_id": "MM-1789023557",
@@ -93,7 +129,11 @@
     "method": "mobile_money",
     "network": "Airtel Money",
     "phone_number": "0751631327",
-    "hash": 1904922007155734476
+    "hash": 1904922007155734476,
+    "schema_version": 1,
+    "sequence": 10,
+    "previous_hash": "170dbce3bc394e0f0043e7767791e89fcd4e62b14a9d936c9882ff6654faab35",
+    "entry_hash": "e11133c233e5cd3fa9b8c43a2e26158d9813032d8d21df726d156cb0507c4ea1"
   },
   {
     "transaction_id": "WD-1789025595740",
@@ -102,7 +142,11 @@
     "description": "LOAN",
     "date_time": "2026-09-10T10:33:15.806708",
     "method": "withdraw",
-    "hash": 2274324747190544593
+    "hash": 2274324747190544593,
+    "schema_version": 1,
+    "sequence": 11,
+    "previous_hash": "e11133c233e5cd3fa9b8c43a2e26158d9813032d8d21df726d156cb0507c4ea1",
+    "entry_hash": "683118483470a36ef043a8eb225a515464668d85e7c661adda66f77d5c84b402"
   },
   {
     "transaction_id": "MM-1789035763",
@@ -113,7 +157,11 @@
     "method": "mobile_money",
     "network": "MTN MoMo",
     "phone_number": "0765541847",
-    "hash": -8318263399791645287
+    "hash": -8318263399791645287,
+    "schema_version": 1,
+    "sequence": 12,
+    "previous_hash": "683118483470a36ef043a8eb225a515464668d85e7c661adda66f77d5c84b402",
+    "entry_hash": "e9f998641ec5e94c05339aba9b6c22bdc156bfde11a67a92a4c3e0c7048ceeac"
   },
   {
     "transaction_id": "WD-1789113485311",
@@ -123,7 +171,11 @@
     "date_time": "2026-09-11T10:58:05.324924",
     "method": "withdraw",
     "phone_number": "0753588178",
-    "hash": -574251621949878182
+    "hash": -574251621949878182,
+    "schema_version": 1,
+    "sequence": 13,
+    "previous_hash": "e9f998641ec5e94c05339aba9b6c22bdc156bfde11a67a92a4c3e0c7048ceeac",
+    "entry_hash": "e42c7ade9c6130c53ce5853f42516bb6e876eafc42951d14527dea3e5498a282"
   },
   {
     "transaction_id": "WD-1789116942356",
@@ -133,7 +185,11 @@
     "date_time": "2026-09-11T11:55:42.366328",
     "method": "withdraw",
     "phone_number": "0765541847",
-    "hash": -7627820210687823406
+    "hash": -7627820210687823406,
+    "schema_version": 1,
+    "sequence": 14,
+    "previous_hash": "e42c7ade9c6130c53ce5853f42516bb6e876eafc42951d14527dea3e5498a282",
+    "entry_hash": "ff226757fde733070f1b1c2ecfcd72c843b7608cb2610fc26cd94bb75a53415a"
   },
   {
     "transaction_id": "MM1789398673784",
@@ -143,7 +199,11 @@
     "method": "mobile_money",
     "phone_number": "0751631327",
     "network": "Airtel Money",
-    "timestamp": "2026-09-14T18:11:13.875932"
+    "timestamp": "2026-09-14T18:11:13.875932",
+    "schema_version": 1,
+    "sequence": 15,
+    "previous_hash": "ff226757fde733070f1b1c2ecfcd72c843b7608cb2610fc26cd94bb75a53415a",
+    "entry_hash": "8f5219463d1bf1a462eeed7665ec4b02f62f76411f5f64030d54c77b7324b182"
   },
   {
     "transaction_id": "WD-1789398838491",
@@ -151,7 +211,11 @@
     "member_id": "M003",
     "description": "Loan",
     "method": "withdraw",
-    "phone_number": "0753452626"
+    "phone_number": "0753452626",
+    "schema_version": 1,
+    "sequence": 16,
+    "previous_hash": "8f5219463d1bf1a462eeed7665ec4b02f62f76411f5f64030d54c77b7324b182",
+    "entry_hash": "eb05a2a325367f411c2c1a8498515d330066abdef475a73fcfba57047f721aa0"
   },
   {
     "transaction_id": "MM1789400803379",
@@ -161,7 +225,11 @@
     "method": "mobile_money",
     "phone_number": "0765541847",
     "network": "MTN MoMo",
-    "timestamp": "2026-09-14T18:46:43.491214"
+    "timestamp": "2026-09-14T18:46:43.491214",
+    "schema_version": 1,
+    "sequence": 17,
+    "previous_hash": "eb05a2a325367f411c2c1a8498515d330066abdef475a73fcfba57047f721aa0",
+    "entry_hash": "f1352b8ec2541c36eba78c3f496f680e74a980dce403adb4ea1d0956227ef8bf"
   },
   {
     "transaction_id": "MM1789400823234",
@@ -171,7 +239,11 @@
     "method": "mobile_money",
     "phone_number": "0765541847",
     "network": "MTN MoMo",
-    "timestamp": "2026-09-14T18:47:03.895076"
+    "timestamp": "2026-09-14T18:47:03.895076",
+    "schema_version": 1,
+    "sequence": 18,
+    "previous_hash": "f1352b8ec2541c36eba78c3f496f680e74a980dce403adb4ea1d0956227ef8bf",
+    "entry_hash": "50a1c535c189a27d03d222e1d9a7d02e52c7fdf960c349e6db12959e9f0cbcc0"
   },
   {
     "transaction_id": "MM1789401985492",
@@ -181,7 +253,11 @@
     "method": "mobile_money",
     "phone_number": "0751631327",
     "network": "Airtel Money",
-    "timestamp": "2026-09-14T19:06:25.764065"
+    "timestamp": "2026-09-14T19:06:25.764065",
+    "schema_version": 1,
+    "sequence": 19,
+    "previous_hash": "50a1c535c189a27d03d222e1d9a7d02e52c7fdf960c349e6db12959e9f0cbcc0",
+    "entry_hash": "a1b809204b25f9b5cb54aa72aa26db40e7c150a7181fcbaed8e50a42d45b89c2"
   },
   {
     "transaction_id": "WD-1789402061486",
@@ -189,7 +265,11 @@
     "member_id": "M001",
     "description": "Loan application fee",
     "method": "withdraw",
-    "phone_number": "0753588167"
+    "phone_number": "0753588167",
+    "schema_version": 1,
+    "sequence": 20,
+    "previous_hash": "a1b809204b25f9b5cb54aa72aa26db40e7c150a7181fcbaed8e50a42d45b89c2",
+    "entry_hash": "1d6e997b47b2e9f06b6dcf13d72c4f5a470531092a62aa24498404de07c811e6"
   },
   {
     "transaction_id": "MM1789710087100",
@@ -199,7 +279,11 @@
     "method": "mobile_money",
     "phone_number": "0751631327",
     "network": "Airtel Money",
-    "timestamp": "2026-09-18T08:41:27.474319"
+    "timestamp": "2026-09-18T08:41:27.474319",
+    "schema_version": 1,
+    "sequence": 21,
+    "previous_hash": "1d6e997b47b2e9f06b6dcf13d72c4f5a470531092a62aa24498404de07c811e6",
+    "entry_hash": "9a16da913686e71975132379a56b2a1a09f15a2f4a4640672fed6b68f912c531"
   },
   {
     "transaction_id": "MM1789712731972",
@@ -209,7 +293,11 @@
     "method": "mobile_money",
     "phone_number": "0753588178",
     "network": "Airtel Money",
-    "timestamp": "2026-09-18T09:25:31.164485"
+    "timestamp": "2026-09-18T09:25:31.164485",
+    "schema_version": 1,
+    "sequence": 22,
+    "previous_hash": "9a16da913686e71975132379a56b2a1a09f15a2f4a4640672fed6b68f912c531",
+    "entry_hash": "5c24878c5a758866339927f3f4cc87516f3172c3aad36708f0ab0f4fb6ea16a9"
   },
   {
     "transaction_id": "MM1789713686289",
@@ -219,7 +307,11 @@
     "method": "mobile_money",
     "phone_number": "0753588178",
     "network": "MTN MoMo",
-    "timestamp": "2026-09-18T09:41:26.517565"
+    "timestamp": "2026-09-18T09:41:26.517565",
+    "schema_version": 1,
+    "sequence": 23,
+    "previous_hash": "5c24878c5a758866339927f3f4cc87516f3172c3aad36708f0ab0f4fb6ea16a9",
+    "entry_hash": "1da001c173ebb91b4cc5928f9d2264ca4dc051aa1e013503ca992a022d8aebb4"
   },
   {
     "transaction_id": "MM1789715466769",
@@ -229,7 +321,11 @@
     "method": "mobile_money",
     "phone_number": "0753588178",
     "network": "Airtel Money",
-    "timestamp": "2026-09-18T10:11:06.854847"
+    "timestamp": "2026-09-18T10:11:06.854847",
+    "schema_version": 1,
+    "sequence": 24,
+    "previous_hash": "1da001c173ebb91b4cc5928f9d2264ca4dc051aa1e013503ca992a022d8aebb4",
+    "entry_hash": "c71224b3a9c542cade68aa5f38f6afaf6d8e15d2e32d6b2834e19375c64cf3c6"
   },
   {
     "transaction_id": "MM1789715559680",
@@ -239,7 +335,11 @@
     "method": "mobile_money",
     "phone_number": "0753588178",
     "network": "Airtel Money",
-    "timestamp": "2026-09-18T10:12:39.736850"
+    "timestamp": "2026-09-18T10:12:39.736850",
+    "schema_version": 1,
+    "sequence": 25,
+    "previous_hash": "c71224b3a9c542cade68aa5f38f6afaf6d8e15d2e32d6b2834e19375c64cf3c6",
+    "entry_hash": "952a527eaa4452aae75621b2b7e74a3014b8a6874767f4d52d040aeec2151f6b"
   },
   {
     "transaction_id": "MM1789716034213",
@@ -249,7 +349,11 @@
     "method": "mobile_money",
     "phone_number": "0753588178",
     "network": "Airtel Money",
-    "timestamp": "2026-09-18T10:20:34.344412"
+    "timestamp": "2026-09-18T10:20:34.344412",
+    "schema_version": 1,
+    "sequence": 26,
+    "previous_hash": "952a527eaa4452aae75621b2b7e74a3014b8a6874767f4d52d040aeec2151f6b",
+    "entry_hash": "18dc6711b25d8772192c7f3b91fe9c82e42b4148635642ae9461a060926f4744"
   },
   {
     "transaction_id": "MM1789716103370",
@@ -259,7 +363,11 @@
     "method": "mobile_money",
     "phone_number": "0753588178",
     "network": "Airtel Money",
-    "timestamp": "2026-09-18T10:21:43.063492"
+    "timestamp": "2026-09-18T10:21:43.063492",
+    "schema_version": 1,
+    "sequence": 27,
+    "previous_hash": "18dc6711b25d8772192c7f3b91fe9c82e42b4148635642ae9461a060926f4744",
+    "entry_hash": "a6998497544832231cb65bb7c1df60f298acb7b5b8caa8a1b40ca8a77fef75c0"
   },
   {
     "transaction_id": "MM1789716294698",
@@ -269,7 +377,11 @@
     "method": "mobile_money",
     "phone_number": "0753588178",
     "network": "Airtel Money",
-    "timestamp": "2026-09-18T10:24:54.948613"
+    "timestamp": "2026-09-18T10:24:54.948613",
+    "schema_version": 1,
+    "sequence": 28,
+    "previous_hash": "a6998497544832231cb65bb7c1df60f298acb7b5b8caa8a1b40ca8a77fef75c0",
+    "entry_hash": "02c9893f8c9acb6fb7a0ed9e72f1c1473b0990de835008452bfb84d8e7974c1d"
   },
   {
     "transaction_id": "MM1789716435929",
@@ -279,7 +391,11 @@
     "method": "mobile_money",
     "phone_number": "0753588178",
     "network": "Airtel Money",
-    "timestamp": "2026-09-18T10:27:15.546348"
+    "timestamp": "2026-09-18T10:27:15.546348",
+    "schema_version": 1,
+    "sequence": 29,
+    "previous_hash": "02c9893f8c9acb6fb7a0ed9e72f1c1473b0990de835008452bfb84d8e7974c1d",
+    "entry_hash": "1130b30bd1d964f7130b1eb5ead28c48ab38e80117604f908d4ead7f4f91fd46"
   },
   {
     "transaction_id": "MM1789716482918",
@@ -289,7 +405,11 @@
     "method": "mobile_money",
     "phone_number": "0753588178",
     "network": "Airtel Money",
-    "timestamp": "2026-09-18T10:28:02.838400"
+    "timestamp": "2026-09-18T10:28:02.838400",
+    "schema_version": 1,
+    "sequence": 30,
+    "previous_hash": "1130b30bd1d964f7130b1eb5ead28c48ab38e80117604f908d4ead7f4f91fd46",
+    "entry_hash": "72a4c1e0ab6c3d91208a3a51a5e04f047089fed34e9d47b49baaf94ba2debe81"
   },
   {
     "transaction_id": "MM1789716501873",
@@ -299,7 +419,11 @@
     "method": "mobile_money",
     "phone_number": "0753588178",
     "network": "Airtel Money",
-    "timestamp": "2026-09-18T10:28:21.679346"
+    "timestamp": "2026-09-18T10:28:21.679346",
+    "schema_version": 1,
+    "sequence": 31,
+    "previous_hash": "72a4c1e0ab6c3d91208a3a51a5e04f047089fed34e9d47b49baaf94ba2debe81",
+    "entry_hash": "75671b6476925a6591ecd0cc453c8088b27a83cff3b4e8fecc77f29ed099dcba"
   },
   {
     "transaction_id": "MM1789720710265",
@@ -309,7 +433,11 @@
     "method": "mobile_money",
     "phone_number": "0751631327",
     "network": "Airtel Money",
-    "timestamp": "2026-09-18T11:38:30.531353"
+    "timestamp": "2026-09-18T11:38:30.531353",
+    "schema_version": 1,
+    "sequence": 32,
+    "previous_hash": "75671b6476925a6591ecd0cc453c8088b27a83cff3b4e8fecc77f29ed099dcba",
+    "entry_hash": "51fd1ca2edd4518fadab06febeedd6792dd7bedd0c5f786b82ca6dde39c6a4ff"
   },
   {
     "transaction_id": "MM1789720730776",
@@ -319,7 +447,11 @@
     "method": "mobile_money",
     "phone_number": "0751631327",
     "network": "Airtel Money",
-    "timestamp": "2026-09-18T11:38:50.853171"
+    "timestamp": "2026-09-18T11:38:50.853171",
+    "schema_version": 1,
+    "sequence": 33,
+    "previous_hash": "51fd1ca2edd4518fadab06febeedd6792dd7bedd0c5f786b82ca6dde39c6a4ff",
+    "entry_hash": "1bd3999d0d5e84f51cedf0b9d915519aab8f99e86ef67a0a190aa68569f6f9b2"
   },
   {
     "transaction_id": "MM1789720994441",
@@ -329,7 +461,11 @@
     "method": "mobile_money",
     "phone_number": "0751631327",
     "network": "Airtel Money",
-    "timestamp": "2026-09-18T11:43:14.605982"
+    "timestamp": "2026-09-18T11:43:14.605982",
+    "schema_version": 1,
+    "sequence": 34,
+    "previous_hash": "1bd3999d0d5e84f51cedf0b9d915519aab8f99e86ef67a0a190aa68569f6f9b2",
+    "entry_hash": "8b7a62cbf3b7502611005030ece666115d1cee57c1d272e17403ae855cde3476"
   },
   {
     "transaction_id": "MM1789723212779",
@@ -339,6 +475,10 @@
     "method": "mobile_money",
     "phone_number": "0753588178",
     "network": "Airtel Money",
-    "timestamp": "2026-09-18T12:20:12.479870"
+    "timestamp": "2026-09-18T12:20:12.479870",
+    "schema_version": 1,
+    "sequence": 35,
+    "previous_hash": "8b7a62cbf3b7502611005030ece666115d1cee57c1d272e17403ae855cde3476",
+    "entry_hash": "bc2c24e69c76046c06374f23559bdc3a7c218adda2255a5204e9a8aa073db53a"
   }
 ]
