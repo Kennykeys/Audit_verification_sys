@@ -1,6 +1,13 @@
 from datetime import datetime
 import json
 import os
+from pathlib import Path
+import sys
+
+if __package__ in {None, ""}:
+    project_root = str(Path(__file__).resolve().parents[1])
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +24,11 @@ from backend.integrity import (
     verify_legacy_hash,
 )
 
+from backend.config import Settings
+from backend.repository import AuditLedgerRepository, DuplicateTransactionError, LedgerCorruptionError
+
+settings = Settings.from_environment()
+
 app = FastAPI(title="Tamper-Evident Audit System", version="4.0.0")
 
 app.add_middleware(
@@ -27,21 +39,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-AUDIT_FILE = os.path.join("audit_repo", "audit_log.json")
-if not os.path.exists(AUDIT_FILE):
-    os.makedirs("audit_repo", exist_ok=True)
-    with open(AUDIT_FILE, "w") as audit_file:
-        json.dump([], audit_file)
+AUDIT_FILE = str(settings.ledger_path)
+
+
+def get_audit_repository():
+    return AuditLedgerRepository(AUDIT_FILE)
 
 
 def load_audit_log():
-    with open(AUDIT_FILE, "r") as audit_file:
-        return json.load(audit_file)
-
-
-def save_audit_log(log):
-    with open(AUDIT_FILE, "w") as audit_file:
-        json.dump(log, audit_file, indent=2)
+    try:
+        return get_audit_repository().load_entries()
+    except LedgerCorruptionError as error:
+        raise HTTPException(status_code=500, detail="Audit ledger integrity validation failed") from error
 
 
 def compute_hash(entry):
@@ -63,35 +72,38 @@ def add_chain_fields(entry, log):
 
 @app.post("/record")
 def record_transaction(entry: dict):
-    log = load_audit_log()
-    if any(existing["transaction_id"] == entry["transaction_id"] for existing in log):
-        raise HTTPException(status_code=400, detail="Transaction ID already exists")
     entry["created_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
     entry["method"] = "Admin"
     entry["hash"] = compute_entry_hash(entry)
-    add_chain_fields(entry, log)
-    log.append(entry)
-    save_audit_log(log)
-    return {"message": "Transaction recorded successfully", "transaction": entry}
+    try:
+        persisted_entry = get_audit_repository().append_entry(entry)
+    except DuplicateTransactionError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except LedgerCorruptionError as error:
+        raise HTTPException(status_code=409, detail="Ledger integrity verification failed") from error
+    return {"message": "Transaction recorded successfully", "transaction": persisted_entry}
 
 
 @app.post("/record_mobile")
 def record_mobile_transaction(entry: dict):
-    log = load_audit_log()
-    if any(existing["transaction_id"] == entry["transaction_id"] for existing in log):
-        raise HTTPException(status_code=400, detail="Transaction ID already exists")
     entry["created_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
     entry["method"] = "Mobile Money"
     entry["hash"] = compute_entry_hash(entry)
-    add_chain_fields(entry, log)
-    log.append(entry)
-    save_audit_log(log)
-    return {"message": "Mobile Money transaction recorded successfully", "transaction": entry}
+    try:
+        persisted_entry = get_audit_repository().append_entry(entry)
+    except DuplicateTransactionError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except LedgerCorruptionError as error:
+        raise HTTPException(status_code=409, detail="Ledger integrity verification failed") from error
+    return {"message": "Mobile Money transaction recorded successfully", "transaction": persisted_entry}
 
 
 @app.get("/verify/{transaction_id}")
 def verify_transaction(transaction_id: str):
-    log = load_audit_log()
+    try:
+        log = get_audit_repository().load_entries()
+    except LedgerCorruptionError:
+        return {"transaction_id": transaction_id, "verified": False, "hash_format": "invalid", "status": "Tampered"}
     entry = next((existing for existing in log if existing["transaction_id"] == transaction_id), None)
     if not entry:
         raise HTTPException(status_code=404, detail="Transaction not found")
