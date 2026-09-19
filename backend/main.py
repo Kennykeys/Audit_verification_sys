@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import sys
+import uuid
 
 if __package__ in {None, ""}:
     project_root = str(Path(__file__).resolve().parents[1])
@@ -27,6 +28,7 @@ from backend.integrity import (
 from backend.config import Settings
 from backend.repository import AuditLedgerRepository, DuplicateTransactionError, LedgerCorruptionError
 from backend.schemas import LedgerIntegrityResult
+from pydantic import BaseModel, Field
 from backend.services.audit_service import AuditService
 
 settings = Settings.from_environment()
@@ -40,6 +42,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+class RecordTransactionRequest(BaseModel):
+    transaction_id: str = Field(min_length=1, max_length=128)
+    amount: float = Field(gt=0)
+    member_id: str = Field(min_length=1, max_length=128)
+    description: str = Field(min_length=1, max_length=500)
+
+
+class RecordMobileRequest(BaseModel):
+    network: str = Field(min_length=1, max_length=64)
+    phone_number: str = Field(min_length=7, max_length=32)
+    amount: float = Field(gt=0)
+    member_id: str = Field(min_length=1, max_length=128)
+    description: str = Field(min_length=1, max_length=500)
+
 
 AUDIT_FILE = str(settings.ledger_path)
 
@@ -77,28 +94,31 @@ def add_chain_fields(entry, log):
 
 
 @app.post("/record")
-def record_transaction(entry: dict):
+def record_transaction(request: RecordTransactionRequest):
+    entry = request.model_dump()
     entry["created_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
     entry["method"] = "Admin"
     entry["hash"] = compute_entry_hash(entry)
     try:
         persisted_entry = get_audit_service().record_entry(entry)
     except DuplicateTransactionError as error:
-        raise HTTPException(status_code=400, detail=str(error)) from error
+        raise HTTPException(status_code=409, detail=str(error)) from error
     except LedgerCorruptionError as error:
         raise HTTPException(status_code=409, detail="Ledger integrity verification failed") from error
     return {"message": "Transaction recorded successfully", "transaction": persisted_entry}
 
 
 @app.post("/record_mobile")
-def record_mobile_transaction(entry: dict):
+def record_mobile_transaction(request: RecordMobileRequest):
+    entry = request.model_dump()
     entry["created_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
-    entry["method"] = "Mobile Money"
+    entry["transaction_id"] = "MM-" + uuid.uuid4().hex
+    entry["method"] = "Mobile Money Simulation"
     entry["hash"] = compute_entry_hash(entry)
     try:
         persisted_entry = get_audit_service().record_entry(entry)
     except DuplicateTransactionError as error:
-        raise HTTPException(status_code=400, detail=str(error)) from error
+        raise HTTPException(status_code=409, detail=str(error)) from error
     except LedgerCorruptionError as error:
         raise HTTPException(status_code=409, detail="Ledger integrity verification failed") from error
     return {"message": "Mobile Money transaction recorded successfully", "transaction": persisted_entry}
