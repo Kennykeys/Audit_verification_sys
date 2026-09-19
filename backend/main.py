@@ -36,9 +36,11 @@ from backend.schemas import AuthenticationLoginRequest, AuthenticationTokenRespo
 from pydantic import BaseModel, Field
 from backend.services.audit_service import AuditService
 from backend.security import SecurityBoundaryMiddleware
+from backend.observability import ObservabilityMiddleware, StructuredEventLogger, configure_structured_logging
 
 settings = Settings.from_environment()
 authentication_service = AuthenticationService(settings)
+event_logger = StructuredEventLogger(configure_structured_logging(settings.log_level))
 
 app = FastAPI(title="Tamper-Evident Audit System", version="4.0.0")
 
@@ -51,6 +53,7 @@ app.add_middleware(
 )
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(settings.trusted_hosts))
 app.add_middleware(SecurityBoundaryMiddleware, settings=settings)
+app.add_middleware(ObservabilityMiddleware, event_logger=event_logger)
 if settings.https_redirect:
     app.add_middleware(HTTPSRedirectMiddleware)
 
@@ -72,7 +75,7 @@ async def validation_error_handler(request, exc):
 
 @app.exception_handler(Exception)
 async def unhandled_error_handler(request, exc):
-    return JSONResponse(status_code=500, content={"error": {"code": "internal_error", "message": "An internal server error occurred", "request_id": request.headers.get("x-request-id")}})
+    return JSONResponse(status_code=500, content={"error": {"code": "internal_error", "message": "An internal server error occurred", "request_id": getattr(request.state, "request_id", None)}})
 
 class RecordTransactionRequest(BaseModel):
     transaction_id: str = Field(min_length=1, max_length=128)
@@ -131,6 +134,48 @@ def add_chain_fields(entry, log):
     entry["previous_hash"] = log[-1]["entry_hash"] if log else GENESIS_PREVIOUS_HASH
     entry["entry_hash"] = compute_chain_entry_hash(entry)
     return entry
+
+
+@app.get("/health/live")
+def health_live():
+    return {"status": "live"}
+
+
+@app.get("/health/ready")
+def health_ready(response: Response):
+    try:
+        integrity = get_audit_service().verify_ledger()
+    except Exception:
+        event_logger.emit(
+            "readiness_failed",
+            severity="ERROR",
+            failure_type="repository_unavailable",
+        )
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+        return {"status": "not_ready", "ledger_integrity": "unavailable"}
+    if not integrity.valid:
+        failure_type = (
+            integrity.first_invalid_entry.failure_type
+            if integrity.first_invalid_entry
+            else "unknown"
+        )
+        event_logger.emit(
+            "integrity_failed",
+            severity="ERROR",
+            failure_type=failure_type,
+            entries_checked=integrity.entries_checked,
+        )
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+        return {
+            "status": "not_ready",
+            "ledger_integrity": "invalid",
+            "failure_type": failure_type,
+        }
+    return {
+        "status": "ready",
+        "ledger_integrity": "valid",
+        "entries_checked": integrity.entries_checked,
+    }
 
 
 @app.post("/auth/login", response_model=AuthenticationTokenResponse)

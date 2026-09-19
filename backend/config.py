@@ -21,6 +21,7 @@ class Settings:
     mutation_rate_limit: int = 30
     rate_limit_window_seconds: int = 60
     https_redirect: bool = False
+    log_level: str = "INFO"
 
     @classmethod
     def from_environment(cls):
@@ -58,4 +59,5 @@ class Settings:
             mutation_rate_limit=positive_integer("AUDIT_MUTATION_RATE_LIMIT", 30),
             rate_limit_window_seconds=positive_integer("AUDIT_RATE_LIMIT_WINDOW_SECONDS", 60),
             https_redirect=https_redirect,
+            log_level=os.getenv("AUDIT_LOG_LEVEL", "INFO").upper(),
         )
