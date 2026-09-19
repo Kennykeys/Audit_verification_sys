@@ -90,6 +90,38 @@ def get_member_email(member_id: str):
     return None
 
 
+
+def send_account_modification_email(recipient_email: str, old_member_id: str, new_member_id: str):
+    if not recipient_email or not SMTP_USER or not SMTP_PASS:
+        print("Account modification email skipped: SMTP credentials are not configured.")
+        return False
+
+    message = MIMEMultipart()
+    message["From"] = SMTP_USER
+    message["To"] = recipient_email
+    message["Subject"] = "Account Modification Alert"
+    body = (
+        "Dear Member,\n\n"
+        "Your SACCO account details were modified by an administrator.\n\n"
+        f"Old Member ID: {old_member_id}\n"
+        f"New Member ID: {new_member_id}\n"
+        "Password: hidden for security\n\n"
+        "If you did not request this change, contact SACCO support immediately.\n\n"
+        "Audit Verification System"
+    )
+    message.attach(MIMEText(body, "plain"))
+
+    try:
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.sendmail(SMTP_USER, recipient_email, message.as_string())
+        return True
+    except Exception as error:
+        print(f"Account modification email failed: {error}")
+        return False
+
+
 class LoginRequest(BaseModel):
     member_id: str
     password: str
@@ -242,19 +274,46 @@ def delete_member(member_id: str):
     save_members(members)
     return {"success": True, "message": f"Member {member_id} deleted successfully"}
 
+
 @app.put("/modify_member/{member_id}")
 def modify_member(member_id: str, req: ModifyMemberRequest):
     members = load_members()
     if member_id not in members:
         raise HTTPException(status_code=404, detail="Member not found")
-    del members[member_id]
-    members[req.new_member_id] = {
+
+    if req.new_member_id != member_id and req.new_member_id in members:
+        raise HTTPException(status_code=409, detail="New Member ID already exists")
+
+    if not is_strong_password(req.new_password):
+        raise HTTPException(status_code=400, detail="New password does not meet requirements")
+
+    existing_member = members[member_id]
+    member_email = existing_member.get("email")
+
+    updated_member = {
         "password": hash_password(req.new_password),
-        "lockout_until": 0,
-        "attempts": 3
+        "email": member_email,
+        "lockout_until": existing_member.get("lockout_until", 0),
+        "attempts": existing_member.get("attempts", 3)
     }
+
+    if req.new_member_id != member_id:
+        del members[member_id]
+
+    members[req.new_member_id] = updated_member
     save_members(members)
-    return {"success": True, "message": f"Member {member_id} modified to {req.new_member_id} successfully"}
+
+    email_sent = send_account_modification_email(
+        member_email,
+        member_id,
+        req.new_member_id
+    )
+
+    return {
+        "success": True,
+        "message": f"Member {member_id} modified to {req.new_member_id} successfully",
+        "email_alert_sent": email_sent
+    }
 
 # ---------------- TRANSACTIONS ----------------
 @app.get("/transactions")
