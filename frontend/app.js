@@ -1,69 +1,93 @@
-// Verify transaction form
-document.getElementById("verifyForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const id = document.getElementById("verify_id").value;
+'use strict';
 
-  try {
-    const res = await fetch(`${window.AUDIT_APP_CONFIG.apiBaseUrl}/verify/${id}`);
-    const result = await res.json();
-    document.getElementById("verifyResponse").textContent = JSON.stringify(result, null, 2);
-  } catch (err) {
-    document.getElementById("verifyResponse").textContent = "Error: " + err.message;
-  }
-});
+(function initializeDashboard() {
+  const verifyForm = document.getElementById('verifyForm');
+  const verifyResponse = document.getElementById('verifyResponse');
+  const mobileForm = document.getElementById('mobileMoneyForm');
+  const mobileResponse = document.getElementById('mobileMoneyResponse');
+  const mobileSubmitButton = mobileForm.querySelector('button[type="submit"]');
+  const recordingSummary = document.getElementById('recordingSummary');
 
-// Mobile Money simulation
-function showPaymentOptions() {
-  document.getElementById("paymentSection").style.display = "block";
-}
-
-async function simulatePayment() {
-  const network = document.getElementById("network").value;
-  const number = document.getElementById("phoneNumber").value.trim();
-  const amount = parseFloat(document.getElementById("mobileAmount").value);
-  const member = document.getElementById("mobileMember").value;
-  const responseBox = document.getElementById("paymentResponse");
-
-  if (!network) {
-    responseBox.textContent = "Please select a network.";
-    return;
+  function validationMessage(error, fallback) {
+    const detail = error.payload && error.payload.detail;
+    if (!Array.isArray(detail)) return error.message || fallback;
+    return detail.map((item) => {
+      const location = Array.isArray(item.loc) ? item.loc : [];
+      const field = location.length ? location[location.length - 1] : 'field';
+      return `${field}: ${item.msg || 'Invalid value'}`;
+    }).join('; ');
   }
 
-  if (!/^\d{10}$/.test(number)) {
-    responseBox.textContent = "Invalid number: must be 10 digits.";
-    return;
+  async function refreshSummary() {
+    const payload = await window.AuditApi.request('/transactions');
+    const transactions = Array.isArray(payload.transactions) ? payload.transactions : [];
+    const totalAmount = transactions.reduce((sum, transaction) => {
+      const amount = Number(transaction.amount);
+      return Number.isFinite(amount) ? sum + amount : sum;
+    }, 0);
+    window.AuditUi.clearElement(recordingSummary);
+    const count = document.createElement('strong');
+    count.textContent = `Recorded transactions: ${transactions.length}`;
+    const amount = document.createElement('span');
+    amount.textContent = `Total recorded value: ${window.AuditUi.formatAmount(totalAmount)}`;
+    recordingSummary.appendChild(count);
+    recordingSummary.appendChild(amount);
   }
 
-  let valid = false;
-  if (network === "airtel") {
-    valid = /^(070|075|074|02)\d{7}$/.test(number);
-  } else if (network === "mtn") {
-    valid = /^(077|076|078)\d{7}$/.test(number);
-  }
+  verifyForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const transactionId = document.getElementById('verify_id').value.trim();
+    const button = verifyForm.querySelector('button[type="submit"]');
+    window.AuditUi.setBusy(button, true, 'Verifying...');
+    window.AuditUi.setStatus(verifyResponse, 'Verifying transaction...', 'info');
+    try {
+      const result = await window.AuditApi.request(`/verify/${encodeURIComponent(transactionId)}`);
+      const state = result.verified ? 'success' : 'error';
+      const message = result.verified
+        ? `Transaction ${transactionId} is verified in a valid ledger context.`
+        : `Transaction ${transactionId} is not valid in the current ledger context.`;
+      window.AuditUi.setStatus(verifyResponse, message, state);
+    } catch (error) {
+      window.AuditUi.setStatus(verifyResponse, error.message || 'Verification failed.', 'error');
+    } finally {
+      window.AuditUi.setBusy(button, false);
+    }
+  });
 
-  if (!valid) {
-    responseBox.textContent = "❌ Invalid " + network.toUpperCase() + " number.";
-    return;
-  }
+  mobileForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    window.AuditUi.setBusy(mobileSubmitButton, true, 'Recording simulation...');
+    window.AuditUi.setStatus(mobileResponse, 'Validating and recording mobile-money simulation...', 'info');
+    const payload = {
+      network: document.getElementById('network').value,
+      phone_number: document.getElementById('phoneNumber').value.trim(),
+      amount: Number(document.getElementById('mmAmount').value),
+      member_id: document.getElementById('mmMemberId').value.trim(),
+      description: document.getElementById('mmDescription').value
+    };
+    try {
+      const result = await window.AuditApi.request('/record_mobile', { method: 'POST', body: payload });
+      window.AuditUi.setStatus(
+        mobileResponse,
+        `Simulation recorded successfully as ${result.transaction.transaction_id}.`,
+        'success'
+      );
+      mobileForm.reset();
+      await refreshSummary();
+    } catch (error) {
+      window.AuditUi.setStatus(
+        mobileResponse,
+        validationMessage(error, 'The simulation could not be recorded.'),
+        'error'
+      );
+    } finally {
+      window.AuditUi.setBusy(mobileSubmitButton, false);
+    }
+  });
 
-  // Build transaction data
-  const data = {
-    transaction_id: "MM" + Date.now(),
-    amount: amount,
-    member_id: member,
-    description: `Mobile Money Payment (${network.toUpperCase()})`
-  };
-
-  try {
-    const res = await fetch(`${window.AUDIT_APP_CONFIG.apiBaseUrl}/record_mobile`, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(data)
+  document.addEventListener('DOMContentLoaded', () => {
+    refreshSummary().catch(() => {
+      window.AuditUi.setStatus(recordingSummary, 'Ledger summary is currently unavailable.', 'error');
     });
-    const result = await res.json();
-    responseBox.textContent = "✅ " + network.toUpperCase() + " number accepted. PIN prompt will appear on your phone (simulation).\n\n" +
-      JSON.stringify(result, null, 2);
-  } catch (err) {
-    responseBox.textContent = "Error recording transaction: " + err.message;
-  }
-}
+  });
+})();

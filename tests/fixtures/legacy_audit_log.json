@@ -1,0 +1,344 @@
+[
+  {
+    "transaction_id": "TZ001",
+    "amount": 2000,
+    "member_id": "M1",
+    "description": "Loan Payment Installation",
+    "created_at": "2026-09-02 23:26:09",
+    "method": "Admin",
+    "hash": "8d7d484c65743442436ff8d303ffe8fa7f364a82580edb7554fee91ab03c9766"
+  },
+  {
+    "transaction_id": "MM1788381851531",
+    "amount": 40000,
+    "member_id": "M13",
+    "description": "Mobile Money Payment (AIRTEL)",
+    "created_at": "2026-09-02 23:44:11",
+    "method": "Mobile Money",
+    "hash": "9b0efe2fbc3c3a1d13a202fe9f3ad8b82239b6eb770e2d066e428e308c3c2bd0"
+  },
+  {
+    "transaction_id": "MM1788415311567",
+    "amount": 40000,
+    "member_id": "M14",
+    "description": "Mobile Money Payment (AIRTEL)",
+    "created_at": "2026-09-03 09:01:52",
+    "method": "Mobile Money",
+    "hash": "cad46a6748dfe20e2918a174973fe83a62539060d5f12eaf0cea7fe6506074e5"
+  },
+  {
+    "transaction_id": "MM1788415313057",
+    "amount": 40000,
+    "member_id": "M14",
+    "description": "Mobile Money Payment (AIRTEL)",
+    "created_at": "2026-09-03 09:01:53",
+    "method": "Mobile Money",
+    "hash": "9f22b6f70e86e9a6cfff00f64f003b442aaeaee1b58c04350ce50cef4e5bfecc"
+  },
+  {
+    "transaction_id": "MM1788415313241",
+    "amount": 40000,
+    "member_id": "M14",
+    "description": "Mobile Money Payment (AIRTEL)",
+    "created_at": "2026-09-03 09:01:53",
+    "method": "Mobile Money",
+    "hash": "704ab55ade7425c3d3d222a98bc9d25011ffe52f4f76af6d16bac30327ee31d2"
+  },
+  {
+    "transaction_id": "MM1788456808528",
+    "amount": 50000,
+    "member_id": "M15",
+    "description": "Mobile Money Payment (AIRTEL)",
+    "created_at": "2026-09-03 20:33:28",
+    "method": "Mobile Money",
+    "hash": "f245edef0460f2ef0874ca31b9a92cbd11233979a631c309b2a9b932cfaffa02"
+  },
+  {
+    "transaction_id": "MM1788456917204",
+    "amount": 60000,
+    "member_id": "M16",
+    "description": "Mobile Money Payment (MTN)",
+    "created_at": "2026-09-03 20:35:17",
+    "method": "Mobile Money",
+    "hash": "462c6e80d2256cd6bea44dd232237151d653730984f5b51c5d159a4ecc4d04b5"
+  },
+  {
+    "transaction_id": "MM-1788952489",
+    "amount": 3000.0,
+    "member_id": "M001",
+    "description": "Entry/Membership Fee",
+    "date_time": "2026-09-09T14:14:49.994611",
+    "method": "mobile_money",
+    "network": "Airtel Money",
+    "phone_number": "0751631327",
+    "hash": -4333102340398946235
+  },
+  {
+    "transaction_id": "MM-1788957758",
+    "amount": 30000.0,
+    "member_id": "M001",
+    "description": "Shares (Capital)",
+    "date_time": "2026-09-09T15:42:38.992584",
+    "method": "mobile_money",
+    "network": "Airtel Money",
+    "phone_number": "0751631327",
+    "hash": -3914571602158866085
+  },
+  {
+    "transaction_id": "MM-1789023557",
+    "amount": 500000.0,
+    "member_id": "M001",
+    "description": "Annual Subscription",
+    "date_time": "2026-09-10T09:59:17.132537",
+    "method": "mobile_money",
+    "network": "Airtel Money",
+    "phone_number": "0751631327",
+    "hash": 1904922007155734476
+  },
+  {
+    "transaction_id": "WD-1789025595740",
+    "amount": -40000.0,
+    "member_id": "M003",
+    "description": "LOAN",
+    "date_time": "2026-09-10T10:33:15.806708",
+    "method": "withdraw",
+    "hash": 2274324747190544593
+  },
+  {
+    "transaction_id": "MM-1789035763",
+    "amount": 60000.0,
+    "member_id": "M001",
+    "description": "Shares (Capital)",
+    "date_time": "2026-09-10T13:22:43.508295",
+    "method": "mobile_money",
+    "network": "MTN MoMo",
+    "phone_number": "0765541847",
+    "hash": -8318263399791645287
+  },
+  {
+    "transaction_id": "WD-1789113485311",
+    "amount": -60000.0,
+    "member_id": "M004",
+    "description": "Loan",
+    "date_time": "2026-09-11T10:58:05.324924",
+    "method": "withdraw",
+    "phone_number": "0753588178",
+    "hash": -574251621949878182
+  },
+  {
+    "transaction_id": "WD-1789116942356",
+    "amount": -30000.0,
+    "member_id": "M005",
+    "description": "Loan",
+    "date_time": "2026-09-11T11:55:42.366328",
+    "method": "withdraw",
+    "phone_number": "0765541847",
+    "hash": -7627820210687823406
+  },
+  {
+    "transaction_id": "MM1789398673784",
+    "amount": 50000.0,
+    "member_id": "M001",
+    "description": "Welfare Contribution",
+    "method": "mobile_money",
+    "phone_number": "0751631327",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-14T18:11:13.875932"
+  },
+  {
+    "transaction_id": "WD-1789398838491",
+    "amount": -85000.0,
+    "member_id": "M003",
+    "description": "Loan",
+    "method": "withdraw",
+    "phone_number": "0753452626"
+  },
+  {
+    "transaction_id": "MM1789400803379",
+    "amount": 60000.0,
+    "member_id": "M001",
+    "description": "Annual Subscription",
+    "method": "mobile_money",
+    "phone_number": "0765541847",
+    "network": "MTN MoMo",
+    "timestamp": "2026-09-14T18:46:43.491214"
+  },
+  {
+    "transaction_id": "MM1789400823234",
+    "amount": 60000.0,
+    "member_id": "M001",
+    "description": "Annual Subscription",
+    "method": "mobile_money",
+    "phone_number": "0765541847",
+    "network": "MTN MoMo",
+    "timestamp": "2026-09-14T18:47:03.895076"
+  },
+  {
+    "transaction_id": "MM1789401985492",
+    "amount": 200000.0,
+    "member_id": "M001",
+    "description": "Loan Application Fee",
+    "method": "mobile_money",
+    "phone_number": "0751631327",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-14T19:06:25.764065"
+  },
+  {
+    "transaction_id": "WD-1789402061486",
+    "amount": -4000.0,
+    "member_id": "M001",
+    "description": "Loan application fee",
+    "method": "withdraw",
+    "phone_number": "0753588167"
+  },
+  {
+    "transaction_id": "MM1789710087100",
+    "amount": 40000.0,
+    "member_id": "M001",
+    "description": "Annual Subscription",
+    "method": "mobile_money",
+    "phone_number": "0751631327",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T08:41:27.474319"
+  },
+  {
+    "transaction_id": "MM1789712731972",
+    "amount": 50000.0,
+    "member_id": "M006",
+    "description": "Shares (Capital)",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T09:25:31.164485"
+  },
+  {
+    "transaction_id": "MM1789713686289",
+    "amount": 40000.0,
+    "member_id": "M006",
+    "description": "Account Maintenance Fee",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "MTN MoMo",
+    "timestamp": "2026-09-18T09:41:26.517565"
+  },
+  {
+    "transaction_id": "MM1789715466769",
+    "amount": 30000.0,
+    "member_id": "M006",
+    "description": "Annual Subscription",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T10:11:06.854847"
+  },
+  {
+    "transaction_id": "MM1789715559680",
+    "amount": 80000.0,
+    "member_id": "M006",
+    "description": "Annual Subscription",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T10:12:39.736850"
+  },
+  {
+    "transaction_id": "MM1789716034213",
+    "amount": 60000.0,
+    "member_id": "M006",
+    "description": "Loan Application Fee",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T10:20:34.344412"
+  },
+  {
+    "transaction_id": "MM1789716103370",
+    "amount": 50000.0,
+    "member_id": "M006",
+    "description": "Shares (Capital)",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T10:21:43.063492"
+  },
+  {
+    "transaction_id": "MM1789716294698",
+    "amount": 50000.0,
+    "member_id": "M006",
+    "description": "Shares (Capital)",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T10:24:54.948613"
+  },
+  {
+    "transaction_id": "MM1789716435929",
+    "amount": 70000.0,
+    "member_id": "M006",
+    "description": "Late Payment Penalty",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T10:27:15.546348"
+  },
+  {
+    "transaction_id": "MM1789716482918",
+    "amount": 70000.0,
+    "member_id": "M006",
+    "description": "Late Payment Penalty",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T10:28:02.838400"
+  },
+  {
+    "transaction_id": "MM1789716501873",
+    "amount": 50000.0,
+    "member_id": "M006",
+    "description": "Withdrawal Fee",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T10:28:21.679346"
+  },
+  {
+    "transaction_id": "MM1789720710265",
+    "amount": 80000.0,
+    "member_id": "M006",
+    "description": "Loan Application Fee",
+    "method": "mobile_money",
+    "phone_number": "0751631327",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T11:38:30.531353"
+  },
+  {
+    "transaction_id": "MM1789720730776",
+    "amount": 80000.0,
+    "member_id": "M006",
+    "description": "Loan Application Fee",
+    "method": "mobile_money",
+    "phone_number": "0751631327",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T11:38:50.853171"
+  },
+  {
+    "transaction_id": "MM1789720994441",
+    "amount": 7000.0,
+    "member_id": "M006",
+    "description": "Loan Application Fee",
+    "method": "mobile_money",
+    "phone_number": "0751631327",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T11:43:14.605982"
+  },
+  {
+    "transaction_id": "MM1789723212779",
+    "amount": 120000.0,
+    "member_id": "M006",
+    "description": "Late Payment Penalty",
+    "method": "mobile_money",
+    "phone_number": "0753588178",
+    "network": "Airtel Money",
+    "timestamp": "2026-09-18T12:20:12.479870"
+  }
+]

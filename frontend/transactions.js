@@ -1,105 +1,98 @@
 'use strict';
 
-const transactionTableBody = document.getElementById('transactionsTableBody');
-const transactionForm = document.getElementById('addTransactionForm');
-const transactionResponse = document.getElementById('transactionsResponse');
-const transactionSubmitButton = transactionForm.querySelector('button[type="submit"]');
+(function initializeTransactionsPage() {
+  const transactionTableBody = document.getElementById('transactionsTableBody');
+  const transactionForm = document.getElementById('addTransactionForm');
+  const transactionResponse = document.getElementById('transactionsResponse');
+  const transactionSubmitButton = transactionForm.querySelector('button[type="submit"]');
+  const transactionSummary = document.getElementById('transactionSummary');
 
-function renderTableState(message) {
-  window.AuditUi.clearElement(transactionTableBody);
-  transactionTableBody.appendChild(window.AuditUi.createEmptyRow(9, message));
-}
-
-function renderTransaction(transaction) {
-  const row = document.createElement('tr');
-  row.appendChild(window.AuditUi.createCell(transaction.transaction_id));
-  row.appendChild(window.AuditUi.createCell(window.AuditUi.formatAmount(transaction.amount)));
-  row.appendChild(window.AuditUi.createCell(transaction.member_id));
-  row.appendChild(window.AuditUi.createCell(transaction.description));
-  row.appendChild(window.AuditUi.createCell(transaction.date_time || transaction.created_at));
-  row.appendChild(window.AuditUi.createCell(transaction.method));
-  row.appendChild(window.AuditUi.createCell(transaction.network));
-  row.appendChild(window.AuditUi.createCell(transaction.phone_number));
-  row.appendChild(window.AuditUi.createCell(transaction.hash, 'hash-cell'));
-  transactionTableBody.appendChild(row);
-}
-
-async function readResponse(response) {
-  try {
-    return await response.json();
-  } catch (_error) {
-    return {};
-  }
-}
-
-async function loadTransactions() {
-  renderTableState('Loading transactions...');
-
-  try {
-    const response = await fetch(`${window.AUDIT_APP_CONFIG.apiBaseUrl}/transactions`);
-    const payload = await readResponse(response);
-
-    if (!response.ok) {
-      renderTableState(payload.detail || 'Transactions could not be loaded.');
-      return;
-    }
-
-    const transactions = Array.isArray(payload.transactions) ? payload.transactions : [];
+  function renderTableState(message) {
     window.AuditUi.clearElement(transactionTableBody);
+    transactionTableBody.appendChild(window.AuditUi.createEmptyRow(9, message));
+  }
 
+  function renderTransaction(transaction) {
+    const row = document.createElement('tr');
+    row.appendChild(window.AuditUi.createCell(transaction.transaction_id));
+    row.appendChild(window.AuditUi.createCell(window.AuditUi.formatAmount(transaction.amount)));
+    row.appendChild(window.AuditUi.createCell(transaction.member_id));
+    row.appendChild(window.AuditUi.createCell(transaction.description));
+    row.appendChild(window.AuditUi.createCell(transaction.date_time || transaction.created_at));
+    row.appendChild(window.AuditUi.createCell(transaction.method));
+    row.appendChild(window.AuditUi.createCell(transaction.network));
+    row.appendChild(window.AuditUi.createCell(transaction.phone_number));
+    row.appendChild(window.AuditUi.createCell(transaction.entry_hash || transaction.hash, 'hash-cell'));
+    transactionTableBody.appendChild(row);
+  }
+
+  function renderSummary(transactions) {
+    const totalAmount = transactions.reduce((sum, transaction) => {
+      const amount = Number(transaction.amount);
+      return Number.isFinite(amount) ? sum + amount : sum;
+    }, 0);
+    window.AuditUi.clearElement(transactionSummary);
+    const count = document.createElement('strong');
+    count.textContent = `Recorded transactions: ${transactions.length}`;
+    const amount = document.createElement('span');
+    amount.textContent = `Total recorded value: ${window.AuditUi.formatAmount(totalAmount)}`;
+    transactionSummary.appendChild(count);
+    transactionSummary.appendChild(amount);
+  }
+
+  async function loadTransactions() {
+    renderTableState('Loading transactions...');
+    const payload = await window.AuditApi.request('/transactions');
+    const transactions = Array.isArray(payload.transactions) ? payload.transactions : [];
+    renderSummary(transactions);
+    window.AuditUi.clearElement(transactionTableBody);
     if (transactions.length === 0) {
       renderTableState('No transactions have been recorded yet.');
       return;
     }
-
     transactions.forEach(renderTransaction);
-  } catch (_error) {
-    renderTableState('The transaction service is unavailable. Try again later.');
   }
-}
 
-transactionForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  window.AuditUi.setStatus(transactionResponse, 'Recording transaction...', 'info');
-  window.AuditUi.setBusy(transactionSubmitButton, true, 'Recording...');
+  function validationMessage(error) {
+    const detail = error.payload && error.payload.detail;
+    if (!Array.isArray(detail)) return error.message || 'The transaction could not be recorded.';
+    return detail.map((item) => {
+      const location = Array.isArray(item.loc) ? item.loc : [];
+      const field = location.length ? location[location.length - 1] : 'field';
+      return `${field}: ${item.msg || 'Invalid value'}`;
+    }).join('; ');
+  }
 
-  const transaction = {
-    transaction_id: document.getElementById('transactionId').value.trim(),
-    amount: Number(document.getElementById('amount').value),
-    member_id: document.getElementById('memberId').value.trim(),
-    description: document.getElementById('description').value.trim(),
-    method: 'manual'
-  };
-
-  try {
-    const response = await fetch(`${window.AUDIT_APP_CONFIG.apiBaseUrl}/transactions`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(transaction)
-    });
-    const payload = await readResponse(response);
-
-    if (!response.ok) {
+  transactionForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    window.AuditUi.setBusy(transactionSubmitButton, true, 'Recording...');
+    window.AuditUi.setStatus(transactionResponse, 'Validating and recording transaction...', 'info');
+    const transaction = {
+      transaction_id: document.getElementById('transactionId').value.trim(),
+      amount: Number(document.getElementById('amount').value),
+      member_id: document.getElementById('memberId').value.trim(),
+      description: document.getElementById('description').value.trim()
+    };
+    try {
+      const result = await window.AuditApi.request('/record', { method: 'POST', body: transaction });
+      transactionForm.reset();
       window.AuditUi.setStatus(
         transactionResponse,
-        payload.detail || 'The transaction could not be recorded.',
-        'error'
+        `Transaction ${result.transaction.transaction_id} recorded successfully.`,
+        'success'
       );
-      return;
+      await loadTransactions();
+    } catch (error) {
+      window.AuditUi.setStatus(transactionResponse, validationMessage(error), 'error');
+    } finally {
+      window.AuditUi.setBusy(transactionSubmitButton, false);
     }
+  });
 
-    transactionForm.reset();
-    window.AuditUi.setStatus(transactionResponse, 'Transaction recorded successfully.', 'success');
-    await loadTransactions();
-  } catch (_error) {
-    window.AuditUi.setStatus(
-      transactionResponse,
-      'The transaction service is unavailable. Try again later.',
-      'error'
-    );
-  } finally {
-    window.AuditUi.setBusy(transactionSubmitButton, false);
-  }
-});
-
-document.addEventListener('DOMContentLoaded', loadTransactions);
+  document.addEventListener('DOMContentLoaded', () => {
+    loadTransactions().catch(() => {
+      renderTableState('The transaction service is unavailable. Try again later.');
+      window.AuditUi.setStatus(transactionResponse, 'Transactions could not be loaded.', 'error');
+    });
+  });
+})();
