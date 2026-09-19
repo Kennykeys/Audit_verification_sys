@@ -27,7 +27,7 @@ from backend.integrity import (
 
 from backend.config import Settings
 from backend.repository import AuditLedgerRepository, DuplicateTransactionError, LedgerCorruptionError
-from backend.schemas import LedgerIntegrityResult
+from backend.schemas import IntegrityGraphResult, LedgerIntegrityResult
 from pydantic import BaseModel, Field
 from backend.services.audit_service import AuditService
 
@@ -135,6 +135,11 @@ def verify_transaction(transaction_id: str):
 @app.get("/integrity", response_model=LedgerIntegrityResult)
 def verify_ledger_integrity():
     return get_audit_service().verify_ledger()
+
+
+@app.get("/integrity/graph", response_model=IntegrityGraphResult)
+def get_integrity_graph():
+    return get_audit_service().build_integrity_graph()
 
 
 @app.get("/transactions")

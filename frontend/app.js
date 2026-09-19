@@ -42,11 +42,17 @@
     window.AuditUi.setStatus(verifyResponse, 'Verifying transaction...', 'info');
     try {
       const result = await window.AuditApi.request(`/verify/${encodeURIComponent(transactionId)}`);
-      const state = result.verified ? 'success' : 'error';
-      const message = result.verified
-        ? `Transaction ${transactionId} is verified in a valid ledger context.`
-        : `Transaction ${transactionId} is not valid in the current ledger context.`;
-      window.AuditUi.setStatus(verifyResponse, message, state);
+      window.AuditUi.clearElement(verifyResponse);
+      verifyResponse.dataset.state = result.verified ? "success" : "error";
+      const heading = document.createElement("strong");
+      heading.textContent = result.verified ? "Verified transaction" : "Verification failed";
+      const record = document.createElement("p");
+      record.textContent = `Record hash: ${result.record_valid ? "valid" : "invalid"}`;
+      const context = document.createElement("p");
+      context.textContent = `Ledger context: ${result.ledger_context_valid ? "valid" : "invalid"}`;
+      const failure = document.createElement("p");
+      failure.textContent = `Failure type: ${result.failure_type || "None"}`;
+      verifyResponse.append(heading,record,context,failure);
     } catch (error) {
       window.AuditUi.setStatus(verifyResponse, error.message || 'Verification failed.', 'error');
     } finally {

@@ -2,7 +2,7 @@ import hmac
 
 from backend.integrity import GENESIS_PREVIOUS_HASH, LEDGER_SCHEMA_VERSION, compute_chain_entry_hash
 from backend.repository import DuplicateTransactionError, LedgerCorruptionError
-from backend.schemas import EntryIntegrityResult, LedgerIntegrityResult
+from backend.schemas import EntryIntegrityResult, IntegrityGraphEdge, IntegrityGraphNode, IntegrityGraphResult, LedgerIntegrityResult
 
 
 class AuditService:
@@ -57,3 +57,95 @@ class AuditService:
         record_valid = isinstance(recorded_hash, str) and hmac.compare_digest(recorded_hash.lower(), expected_hash)
         verified = record_valid and integrity.valid
         return {"transaction_id": transaction_id, "amount": entry.get("amount"), "member_id": entry.get("member_id"), "description": entry.get("description"), "created_at": entry.get("created_at"), "method": entry.get("method"), "verified": verified, "record_valid": record_valid, "ledger_context_valid": integrity.valid, "hash_format": "hash-linked-v1" if record_valid else "invalid", "status": "Verified" if verified else "Tampered", "failure_type": None if verified else integrity.first_invalid_entry.failure_type if integrity.first_invalid_entry else "entry_hash"}
+
+    def build_integrity_graph(self):
+        try:
+            entries = self.repository.load_entries()
+        except (LedgerCorruptionError, ValueError, TypeError):
+            return IntegrityGraphResult(
+                valid=False,
+                total_entries=0,
+                entries_checked=0,
+                ledger_head_hash=None,
+                first_invalid_sequence=None,
+                failure_type="malformed_ledger",
+                nodes=[],
+                edges=[],
+            )
+
+        integrity = self.verify_entries(entries)
+        invalid_sequence = (
+            integrity.first_invalid_entry.sequence
+            if integrity.first_invalid_entry is not None
+            else None
+        )
+        failure_type = (
+            integrity.first_invalid_entry.failure_type
+            if integrity.first_invalid_entry is not None
+            else None
+        )
+        nodes = []
+        edges = []
+        previous_recorded_hash = GENESIS_PREVIOUS_HASH
+
+        for expected_sequence, entry in enumerate(entries, start=1):
+            sequence = entry.get("sequence", expected_sequence)
+            transaction_id = str(entry.get("transaction_id", "Unknown transaction"))
+            recorded_hash = entry.get("entry_hash")
+            recorded_previous_hash = entry.get("previous_hash")
+            expected_hash = compute_chain_entry_hash(entry)
+            entry_valid = (
+                isinstance(recorded_hash, str)
+                and hmac.compare_digest(recorded_hash.lower(), expected_hash)
+            )
+            link_valid = recorded_previous_hash == previous_recorded_hash
+            is_first_invalid = invalid_sequence == expected_sequence
+            validity = "invalid" if is_first_invalid else "valid"
+            if invalid_sequence is not None and expected_sequence > invalid_sequence:
+                validity = "unchecked"
+
+            nodes.append(
+                IntegrityGraphNode(
+                    sequence=expected_sequence,
+                    transaction_id=transaction_id,
+                    hash_preview=self._hash_preview(recorded_hash),
+                    previous_hash_preview=self._hash_preview(recorded_previous_hash),
+                    entry_hash=str(recorded_hash or ""),
+                    previous_hash=str(recorded_previous_hash or ""),
+                    entry_valid=entry_valid,
+                    link_valid=link_valid,
+                    validity=validity,
+                    failure_type=failure_type if is_first_invalid else None,
+                )
+            )
+
+            if expected_sequence > 1:
+                edges.append(
+                    IntegrityGraphEdge(
+                        source_sequence=expected_sequence - 1,
+                        target_sequence=expected_sequence,
+                        valid=link_valid and validity != "invalid",
+                    )
+                )
+
+            if isinstance(recorded_hash, str):
+                previous_recorded_hash = recorded_hash
+
+        return IntegrityGraphResult(
+            valid=integrity.valid,
+            total_entries=len(entries),
+            entries_checked=integrity.entries_checked,
+            ledger_head_hash=integrity.ledger_head_hash,
+            first_invalid_sequence=invalid_sequence,
+            failure_type=failure_type,
+            nodes=nodes,
+            edges=edges,
+        )
+
+    @staticmethod
+    def _hash_preview(value):
+        if not isinstance(value, str) or not value:
+            return "Unavailable"
+        if len(value) <= 16:
+            return value
+        return f"{value[:8]}...{value[-8:]}"

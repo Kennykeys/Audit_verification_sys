@@ -40,3 +40,33 @@ class LedgerIntegrityResult(BaseModel):
     entries_checked: int = Field(ge=0)
     first_invalid_entry: EntryIntegrityResult | None = None
     ledger_head_hash: str | None = None
+
+class IntegrityGraphNode(BaseModel):
+    sequence: int = Field(ge=1)
+    transaction_id: str
+    hash_preview: str
+    previous_hash_preview: str
+    entry_hash: str
+    previous_hash: str
+    entry_valid: bool
+    link_valid: bool
+    validity: str
+    failure_type: str | None = None
+
+
+class IntegrityGraphEdge(BaseModel):
+    source_sequence: int
+    target_sequence: int
+    valid: bool
+    relation: str = "previous_hash"
+
+
+class IntegrityGraphResult(BaseModel):
+    valid: bool
+    total_entries: int = Field(ge=0)
+    entries_checked: int = Field(ge=0)
+    ledger_head_hash: str | None = None
+    first_invalid_sequence: int | None = None
+    failure_type: str | None = None
+    nodes: list[IntegrityGraphNode]
+    edges: list[IntegrityGraphEdge]
