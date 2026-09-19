@@ -1,17 +1,20 @@
 {
   "M001": {
-    "password": "user",
+    "password": "$2b$12$uBpvbjyYoyYkxKX0h.aThOXoo0m5PK2lrEeSZOQWeFY6.NUAXec8O",
     "lockout_until": 0,
-    "attempts": 3
+    "attempts": 3,
+    "email": "user1@example.com"
   },
   "M002": {
-    "password": "user2",
+    "password": "$2b$12$Q50mXXgB8KgJMFIebl4XyegsmgUSnwnofFy0Hp6WhRzXoeCGcQaa6",
     "lockout_until": 0,
-    "attempts": 3
+    "attempts": 3,
+    "email": "user2@example.com"
   },
   "M003": {
-    "password": "user3",
+    "password": "$2b$12$QWyQkOooodubVRZUUpFJc.jYbgTI69IoE6O7Xj13P.HSOZnQLOODu",
     "lockout_until": 0,
-    "attempts": 3
+    "attempts": 3,
+    "email": "user3@example.com"
   }
 }
