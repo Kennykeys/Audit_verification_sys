@@ -26,6 +26,8 @@ from backend.integrity import (
 
 from backend.config import Settings
 from backend.repository import AuditLedgerRepository, DuplicateTransactionError, LedgerCorruptionError
+from backend.schemas import LedgerIntegrityResult
+from backend.services.audit_service import AuditService
 
 settings = Settings.from_environment()
 
@@ -44,6 +46,10 @@ AUDIT_FILE = str(settings.ledger_path)
 
 def get_audit_repository():
     return AuditLedgerRepository(AUDIT_FILE)
+
+
+def get_audit_service():
+    return AuditService(get_audit_repository())
 
 
 def load_audit_log():
@@ -76,7 +82,7 @@ def record_transaction(entry: dict):
     entry["method"] = "Admin"
     entry["hash"] = compute_entry_hash(entry)
     try:
-        persisted_entry = get_audit_repository().append_entry(entry)
+        persisted_entry = get_audit_service().record_entry(entry)
     except DuplicateTransactionError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
     except LedgerCorruptionError as error:
@@ -90,7 +96,7 @@ def record_mobile_transaction(entry: dict):
     entry["method"] = "Mobile Money"
     entry["hash"] = compute_entry_hash(entry)
     try:
-        persisted_entry = get_audit_repository().append_entry(entry)
+        persisted_entry = get_audit_service().record_entry(entry)
     except DuplicateTransactionError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
     except LedgerCorruptionError as error:
@@ -100,28 +106,15 @@ def record_mobile_transaction(entry: dict):
 
 @app.get("/verify/{transaction_id}")
 def verify_transaction(transaction_id: str):
-    try:
-        log = get_audit_repository().load_entries()
-    except LedgerCorruptionError:
-        return {"transaction_id": transaction_id, "verified": False, "hash_format": "invalid", "status": "Tampered"}
-    entry = next((existing for existing in log if existing["transaction_id"] == transaction_id), None)
-    if not entry:
+    result = get_audit_service().verify_transaction(transaction_id)
+    if result is None:
         raise HTTPException(status_code=404, detail="Transaction not found")
-    linked_valid = verify_chain_entry_hash(entry) and verify_chain_links(log)
-    canonical_valid = verify_entry_hash(entry)
-    legacy_valid = False if canonical_valid else verify_legacy_hash(entry)
-    verified = linked_valid if "entry_hash" in entry else canonical_valid or legacy_valid
-    return {
-        "transaction_id": entry["transaction_id"],
-        "amount": entry["amount"],
-        "member_id": entry["member_id"],
-        "description": entry["description"],
-        "created_at": entry.get("created_at"),
-        "method": entry.get("method"),
-        "verified": verified,
-        "hash_format": "hash-linked-v1" if linked_valid else "canonical-v1" if canonical_valid else "legacy" if legacy_valid else "invalid",
-        "status": "Verified" if verified else "Tampered",
-    }
+    return result
+
+
+@app.get("/integrity", response_model=LedgerIntegrityResult)
+def verify_ledger_integrity():
+    return get_audit_service().verify_ledger()
 
 
 @app.get("/transactions")
