@@ -10,7 +10,7 @@
   <main id="main-content" class="card">
     <h1>Audit Dashboard</h1>
     <p class="page-description">Review transaction records and use the available demonstration workflows.</p>
-    <p class="demo-notice"><strong>Demonstration data:</strong> Dashboard summary values are illustrative and will be replaced when live summary APIs are implemented.</p>
+    <p class="demo-notice"><strong>Live ledger:</strong> Summary values refresh from the recording API.</p>
     <p class="demo-notice" role="status"><strong>Integrity verification available:</strong> Submitted transaction identifiers are checked against deterministic SHA-256 records.</p>
 
     <!-- Verify Transaction -->
@@ -26,8 +26,10 @@
 
     <!-- Mobile Money Simulation -->
     <section>
-      <h2>Pay via Mobile Money</h2>
+      <h2>Mobile-money simulation</h2>
       <p class="demo-notice"><strong>Simulation only:</strong> This workflow demonstrates mobile-money behavior and does not initiate a live payment.</p>
+      <p class="simulation-notice">Simulation only. No provider PIN or secret is collected.</p>
+      <div id="recordingSummary" class="recording-summary" role="status" aria-live="polite"></div>
       <form id="mobileMoneyForm">
         <label for="network">Mobile-money network</label>
         <select id="network" name="network">
@@ -65,6 +67,7 @@
     <!-- Admin Section -->
     <section>
       <h2>Admin Section</h2>
+      <a href="integrity.html">View ledger integrity</a>
       <a href="login.html">Go to View/Add Transactions (Admin)</a>
     </section>
 
@@ -96,7 +99,9 @@
 
   <script src="js/config.js"></script>
   <script src="js/ui.js"></script>
-  <script src="index.js"></script>
+  <script src="js/api.js"></script>
+  <script type="application/json" src="index.js"></script>
+  <script src="app.js"></script>
   <script>
     function memberLogout() {
       sessionStorage.removeItem("memberLoggedIn");

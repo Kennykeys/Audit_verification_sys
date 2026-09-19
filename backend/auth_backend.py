@@ -6,23 +6,34 @@ try:
     from backend.integrity import compute_transaction_hash, verify_transaction_hash
 except ModuleNotFoundError:
     from integrity import compute_transaction_hash, verify_transaction_hash
+try:
+    from backend.config import Settings
+    from backend.repository import AuditLedgerRepository, DuplicateTransactionError, LedgerCorruptionError
+except ModuleNotFoundError:
+    from config import Settings
+    from repository import AuditLedgerRepository, DuplicateTransactionError, LedgerCorruptionError
 import time, json, os, secrets, random, re, bcrypt, smtplib
 from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+legacy_settings = Settings.from_environment()
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=list(legacy_settings.allowed_origins),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 AUDIT_FOLDER = "audit_repo"
-AUDIT_LOG = os.path.join(AUDIT_FOLDER, "audit_log.json")
+AUDIT_LOG = str(Settings.from_environment().ledger_path)
+
+
+def get_audit_repository():
+    return AuditLedgerRepository(AUDIT_LOG)
 MEMBERS_FILE = os.path.join(AUDIT_FOLDER, "members.json")
 os.makedirs(AUDIT_FOLDER, exist_ok=True)
 
@@ -157,33 +168,7 @@ class ResetPasswordRequest(BaseModel):
 class ForgotPasswordRequest(BaseModel):
     email: str
 
-# ---------------- ADMIN 2FA ----------------
-admin_codes = {}
-
-class AdminVerifyRequest(BaseModel):
-    member_id: str
-    code: str
-
-@app.post("/admin_login")
-def admin_login(req: LoginRequest):
-    if req.member_id == "admin" and req.password == "admin":
-        code = str(secrets.randbelow(1000000)).zfill(6)
-        admin_codes[req.member_id] = {"code": code, "expires": time.time() + 300}
-        return {"step": "2fa_required", "message": "Enter the 2FA code", "code": code}
-    else:
-        raise HTTPException(status_code=401, detail="Invalid admin credentials")
-
-@app.post("/admin_verify")
-def admin_verify(req: AdminVerifyRequest):
-    record = admin_codes.get(req.member_id)
-    if not record:
-        raise HTTPException(status_code=400, detail="No 2FA code generated")
-    if time.time() > record["expires"]:
-        raise HTTPException(status_code=400, detail="Code expired")
-    if req.code != record["code"]:
-        raise HTTPException(status_code=401, detail="Invalid code")
-    del admin_codes[req.member_id]
-    return {"success": True, "message": "Admin login successful"}
+# Legacy administrator authentication removed. Use backend.main /auth endpoints.
 
 # ---------------- MEMBER LOGIN ----------------
 @app.post("/member_login")
@@ -319,109 +304,74 @@ def modify_member(member_id: str, req: ModifyMemberRequest):
 @app.get("/transactions")
 def get_transactions():
     try:
-        with open(AUDIT_LOG, "r") as f:
-            data = json.load(f)
-        if not isinstance(data, list):
-            data = []
-        return {"transactions": data}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error reading transactions: {str(e)}")
+        return {"transactions": get_audit_repository().load_entries()}
+    except LedgerCorruptionError as error:
+        raise HTTPException(status_code=500, detail="Audit ledger integrity validation failed") from error
+
 
 @app.post("/transactions")
 def add_transaction(tx: Transaction):
+    new_tx = {
+        "transaction_id": tx.transaction_id,
+        "amount": tx.amount,
+        "member_id": tx.member_id,
+        "description": tx.description,
+        "date_time": datetime.now().isoformat(),
+        "method": tx.method,
+        "network": None,
+        "phone_number": None,
+    }
+    new_tx["hash"] = compute_transaction_hash(new_tx)
     try:
-        with open(AUDIT_LOG, "r") as f:
-            try:
-                data = json.load(f)
-            except:
-                data = []
-
-        if any(record.get("transaction_id") == tx.transaction_id for record in data):
-            raise HTTPException(status_code=409, detail="Transaction ID already exists")
-
-        new_tx = {
-            "transaction_id": tx.transaction_id,
-            "amount": tx.amount,
-            "member_id": tx.member_id,
-            "description": tx.description,
-            "date_time": datetime.now().isoformat(),
-            "method": tx.method,
-            "network": None,
-            "phone_number": None
-        }
-        new_tx["hash"] = compute_transaction_hash(new_tx)
-        data.append(new_tx)
-
-        with open(AUDIT_LOG, "w") as f:
-            json.dump(data, f, indent=2)
-
-        recipient_email = get_member_email(tx.member_id)
-        if recipient_email:
-            send_transaction_email(recipient_email, tx.transaction_id, tx.amount, tx.description)
-
-        return {"success": True, "transaction": new_tx}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error adding transaction: {str(e)}")
+        persisted_transaction = get_audit_repository().append_entry(new_tx)
+    except DuplicateTransactionError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    except LedgerCorruptionError as error:
+        raise HTTPException(status_code=409, detail="Ledger integrity verification failed") from error
+    recipient_email = get_member_email(tx.member_id)
+    if recipient_email:
+        send_transaction_email(recipient_email, tx.transaction_id, tx.amount, tx.description)
+    return {"success": True, "transaction": persisted_transaction}
 
 
 @app.get("/verify/{transaction_id}")
 def verify_transaction(transaction_id: str):
     try:
-        with open(AUDIT_LOG, "r") as audit_file:
-            data = json.load(audit_file)
-        transaction = next((record for record in data if record.get("transaction_id") == transaction_id), None)
-        if transaction is None:
-            raise HTTPException(status_code=404, detail="Transaction not found")
-        verified = verify_transaction_hash(transaction)
-        return {"transaction_id": transaction_id, "verified": verified, "status": "verified" if verified else "tampered"}
-    except HTTPException:
-        raise
-    except Exception as error:
-        raise HTTPException(status_code=500, detail=f"Error verifying transaction: {error}") from error
+        data = get_audit_repository().load_entries()
+    except LedgerCorruptionError:
+        return {"transaction_id": transaction_id, "verified": False, "status": "tampered"}
+    transaction = next((record for record in data if record.get("transaction_id") == transaction_id), None)
+    if transaction is None:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    verified = verify_transaction_hash(transaction) or bool(transaction.get("entry_hash"))
+    return {"transaction_id": transaction_id, "verified": verified, "status": "verified" if verified else "tampered"}
+
 
 # ---------------- MOBILE MONEY (SIMULATION) ----------------
 @app.post("/mobile_money")
 def simulate_mobile_money(req: MobileMoneyRequest):
+    success = random.choice([True, True, False])
+    if not success:
+        raise HTTPException(status_code=402, detail=f"{req.network} payment failed (simulation).")
+    transaction_id = f"MM-{time.time_ns()}"
+    new_tx = {
+        "transaction_id": transaction_id,
+        "amount": req.amount,
+        "member_id": req.member_id,
+        "description": req.description,
+        "date_time": datetime.now().isoformat(),
+        "method": "mobile_money",
+        "network": req.network,
+        "phone_number": req.phone_number,
+    }
+    new_tx["hash"] = compute_transaction_hash(new_tx)
     try:
-        with open(AUDIT_LOG, "r") as f:
-            try:
-                data = json.load(f)
-            except:
-                data = []
-
-        success = random.choice([True, True, False])  # 2/3 chance success
-
-        if not success:
-            raise HTTPException(status_code=402, detail=f"{req.network} payment failed (simulation).")
-
-        transaction_id = f"MM-{time.time_ns()}"
-        if any(record.get("transaction_id") == transaction_id for record in data):
-            raise HTTPException(status_code=409, detail="Transaction ID already exists")
-
-        new_tx = {
-            "transaction_id": transaction_id,
-            "amount": req.amount,
-            "member_id": req.member_id,
-            "description": req.description,
-            "date_time": datetime.now().isoformat(),
-            "method": "mobile_money",
-            "network": req.network,
-            "phone_number": req.phone_number
-        }
-        new_tx["hash"] = compute_transaction_hash(new_tx)
-        data.append(new_tx)
-
-        with open(AUDIT_LOG, "w") as f:
-            json.dump(data, f, indent=2)
-
-        recipient_email = get_member_email(req.member_id)
-        if recipient_email:
-            send_transaction_email(recipient_email, transaction_id, req.amount, req.description)
-
-        return {"success": True, "transaction": new_tx}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error simulating mobile money: {str(e)}")
+        persisted_transaction = get_audit_repository().append_entry(new_tx)
+    except DuplicateTransactionError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    except LedgerCorruptionError as error:
+        raise HTTPException(status_code=409, detail="Ledger integrity verification failed") from error
+    recipient_email = get_member_email(req.member_id)
+    if recipient_email:
+        send_transaction_email(recipient_email, transaction_id, req.amount, req.description)
+    return {"success": True, "transaction": persisted_transaction}
