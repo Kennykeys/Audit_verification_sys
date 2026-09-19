@@ -12,6 +12,10 @@ if __package__ in {None, ""}:
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Response, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from backend.integrity import (
     GENESIS_PREVIOUS_HASH,
@@ -31,6 +35,7 @@ from backend.repository import AuditLedgerRepository, DuplicateTransactionError,
 from backend.schemas import AuthenticationLoginRequest, AuthenticationTokenResponse, AuthenticatedPrincipal, IntegrityGraphResult, LedgerIntegrityResult
 from pydantic import BaseModel, Field
 from backend.services.audit_service import AuditService
+from backend.security import SecurityBoundaryMiddleware
 
 settings = Settings.from_environment()
 authentication_service = AuthenticationService(settings)
@@ -39,11 +44,35 @@ app = FastAPI(title="Tamper-Evident Audit System", version="4.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=list(settings.allowed_origins),
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Accept", "Authorization", "Content-Type", "X-Request-ID"],
 )
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(settings.trusted_hosts))
+app.add_middleware(SecurityBoundaryMiddleware, settings=settings)
+if settings.https_redirect:
+    app.add_middleware(HTTPSRedirectMiddleware)
+
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(request, exc):
+    details = exc.errors()
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": details,
+            "error": {
+                "code": "validation_error",
+                "message": "Request validation failed",
+                "details": details,
+                "request_id": getattr(request.state, "request_id", None),
+            },
+        },
+    )
+
+@app.exception_handler(Exception)
+async def unhandled_error_handler(request, exc):
+    return JSONResponse(status_code=500, content={"error": {"code": "internal_error", "message": "An internal server error occurred", "request_id": request.headers.get("x-request-id")}})
 
 class RecordTransactionRequest(BaseModel):
     transaction_id: str = Field(min_length=1, max_length=128)
