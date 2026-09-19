@@ -15,3 +15,12 @@ class HashableTransactionPayload(BaseModel):
     method: str
     network: str | None = None
     phone_number: str | None = None
+
+
+class HashLinkedLedgerRecord(HashableTransactionPayload):
+    model_config = ConfigDict(extra="allow")
+
+    schema_version: int = Field(default=1, ge=1)
+    sequence: int = Field(ge=1)
+    previous_hash: str = Field(min_length=64, max_length=64)
+    entry_hash: str = Field(min_length=64, max_length=64)

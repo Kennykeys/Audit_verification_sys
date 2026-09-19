@@ -5,7 +5,17 @@ import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.integrity import compute_entry_hash, verify_entry_hash, verify_legacy_hash
+from backend.integrity import (
+    GENESIS_PREVIOUS_HASH,
+    LEDGER_SCHEMA_VERSION,
+    classify_ledger,
+    compute_chain_entry_hash,
+    compute_entry_hash,
+    verify_chain_entry_hash,
+    verify_chain_links,
+    verify_entry_hash,
+    verify_legacy_hash,
+)
 
 app = FastAPI(title="Tamper-Evident Audit System", version="4.0.0")
 
@@ -38,6 +48,19 @@ def compute_hash(entry):
     return compute_entry_hash(entry)
 
 
+def add_chain_fields(entry, log):
+    ledger_format = classify_ledger(log)
+    if ledger_format not in {"empty", "linked"}:
+        raise HTTPException(status_code=409, detail="Ledger migration is required before recording new transactions")
+    if ledger_format == "linked" and not verify_chain_links(log):
+        raise HTTPException(status_code=409, detail="Ledger integrity verification failed")
+    entry["schema_version"] = LEDGER_SCHEMA_VERSION
+    entry["sequence"] = len(log) + 1
+    entry["previous_hash"] = log[-1]["entry_hash"] if log else GENESIS_PREVIOUS_HASH
+    entry["entry_hash"] = compute_chain_entry_hash(entry)
+    return entry
+
+
 @app.post("/record")
 def record_transaction(entry: dict):
     log = load_audit_log()
@@ -46,6 +69,7 @@ def record_transaction(entry: dict):
     entry["created_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
     entry["method"] = "Admin"
     entry["hash"] = compute_entry_hash(entry)
+    add_chain_fields(entry, log)
     log.append(entry)
     save_audit_log(log)
     return {"message": "Transaction recorded successfully", "transaction": entry}
@@ -59,6 +83,7 @@ def record_mobile_transaction(entry: dict):
     entry["created_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
     entry["method"] = "Mobile Money"
     entry["hash"] = compute_entry_hash(entry)
+    add_chain_fields(entry, log)
     log.append(entry)
     save_audit_log(log)
     return {"message": "Mobile Money transaction recorded successfully", "transaction": entry}
@@ -70,8 +95,10 @@ def verify_transaction(transaction_id: str):
     entry = next((existing for existing in log if existing["transaction_id"] == transaction_id), None)
     if not entry:
         raise HTTPException(status_code=404, detail="Transaction not found")
+    linked_valid = verify_chain_entry_hash(entry) and verify_chain_links(log)
     canonical_valid = verify_entry_hash(entry)
     legacy_valid = False if canonical_valid else verify_legacy_hash(entry)
+    verified = linked_valid if "entry_hash" in entry else canonical_valid or legacy_valid
     return {
         "transaction_id": entry["transaction_id"],
         "amount": entry["amount"],
@@ -79,9 +106,9 @@ def verify_transaction(transaction_id: str):
         "description": entry["description"],
         "created_at": entry.get("created_at"),
         "method": entry.get("method"),
-        "verified": canonical_valid or legacy_valid,
-        "hash_format": "canonical-v1" if canonical_valid else "legacy" if legacy_valid else "invalid",
-        "status": "Verified" if canonical_valid or legacy_valid else "Tampered",
+        "verified": verified,
+        "hash_format": "hash-linked-v1" if linked_valid else "canonical-v1" if canonical_valid else "legacy" if legacy_valid else "invalid",
+        "status": "Verified" if verified else "Tampered",
     }
 
 
